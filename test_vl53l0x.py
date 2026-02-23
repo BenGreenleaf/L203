@@ -23,7 +23,7 @@ def test_vl53l0x():
         for _ in range(10):
             distance = vl53l0.read()
             print(f"Distance = {distance}mm")  # Check calibration!
-            sleep(0.5)
+            sleep(0.1)
         
         # Stop device
         vl53l0.stop()

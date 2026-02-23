@@ -41,10 +41,16 @@
   @url https://github.com/DFRobot/DFRobot_TMF8x01
 '''
 
+
 from utime import sleep
 from machine import Pin, SoftI2C, I2C
 
 from libs.DFRobot_TMF8x01.DFRobot_TMF8x01 import DFRobot_TMF8801, DFRobot_TMF8701
+
+from machine import I2C, Pin
+i2c = I2C(0, sda=Pin(8), scl=Pin(9), freq=100000)  # or your actual bus/pins
+print([hex(x) for x in i2c.scan()])
+
 
 def test_TMF8x01_get_distance():
     # Both options work
@@ -54,7 +60,7 @@ def test_TMF8x01_get_distance():
     assert len(i2c_bus.scan()) == 1 # This demo requires exactly one device
 
 
-    # Set the correct device
+    # Set the correct device
     device = "TMF8701"
 
 

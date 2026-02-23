@@ -8,7 +8,7 @@ def resistance_loop():
     R_KNOWN = 10000.0  # 10k resistor
 
     green_led = Pin(28, Pin.OUT)
-    red_led = Pin(27, Pin.OUT)  # Pin 27 = GP27 (labelled 33 on the jumper)
+    red_led = Pin(16, Pin.OUT)  # Pin 27 = GP27 (labelled 33 on the jumper)
     yellow_led = Pin(21, Pin.OUT)  # Pin 26 = GP26 (labelled 32 on the jumper)
     blue_led = Pin(22, Pin.OUT)  # Pin 22 = GP22 (labelled 31 on the jumper)
 

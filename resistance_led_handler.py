@@ -1,7 +1,7 @@
 from machine import Pin, ADC
 from utime import sleep
 
-def test_led():
+def resistance_loop():
 
     adc = ADC(26)      # ADC0 = GP26
     VREF = 3.3
@@ -54,4 +54,4 @@ def test_led():
             blue_led.value(0)
         sleep(0.5)
 if __name__ == "__main__":
-    test_led()
+    resistance_loop()

@@ -1,4 +1,4 @@
-from resistance_led_handler import test_led
+from resistance_led_handler import resistance_loop
 from test_input import test_input_poll
 from test_motor import test_motor3
 from test_linear_actuator import test_actuator1

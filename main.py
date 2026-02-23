@@ -9,8 +9,19 @@ from test_TMF8x01_get_distance import test_TMF8x01_get_distance
 from test_STU_22L_IO_Mode import test_STU_22L_IO_Mode
 from test_STU_22L_UART import test_STU_22L_UART
 from test_tiny_code_reader import test_tiny_code_reader
+from utime import sleep
+import motor_control_main as control
+import line_sensor_control as sensors
 
 print("Welcome to main.py!")
+
+'''
+while True: # continuous loop that controls the entire functionality
+    state = sensors.read_sensors()
+    control.mode = control.update_mode(state, control.mode)
+    control.update_actions(state, control.mode)
+    sleep(0.01) # to be adjusted after testing
+'''
 
 # Uncomment the test to run
 # test_led()

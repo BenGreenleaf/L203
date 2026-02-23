@@ -1,6 +1,7 @@
 from machine import Pin, ADC, PWM
-from stdlib.asyncio import sleep_ms
 from utime import sleep
+from line_sensor_control import read_sensors
+
 
 left_dir = 4
 left_pwm = 5
@@ -64,7 +65,9 @@ def ramp_to(left_target, right_target, step = 5, dt_ms =20): #to reduce dramatic
         sleep(dt_ms / 1000.0)
 
 
-# note to self kind of - these all need to be tested because a turn or speedin/slowing involving the ramp could result in overturning or going beyond the line so should determine the optimum duration once the line deterctor detects the line etc.
+# note to self kind of - these all need to be tested because a turn or speeding/slowing involving the ramp could result in overturning or going beyond the line so should determine the optimum duration once the line deterctor detects the line etc.
+
+#simple templates - to be used in the main motor control file - are called and then controlled depending on the current state of the sensors. need to figure out delays.
 
 def forward(speed):
         ramp_to(speed, speed)
@@ -75,3 +78,8 @@ def backward(speed):
 def decellerate():
     ramp_to(0, 0)
 
+def turn_left(speed):
+    ramp_to(-speed, speed)
+
+def turn_right(speed):
+    ramp_to(speed, -speed)

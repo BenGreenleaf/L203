@@ -110,6 +110,7 @@
     "show_zero_pad_nets": false,
     "sort_ascending": true,
     "sorting_column": 0
+    "sorting_column": 0
   },
   "open_jobsets": [],
   "project": {

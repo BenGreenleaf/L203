@@ -1,7 +1,7 @@
 from machine import ADC, Pin
 import time
 
-adc = ADC(27)     # GP26
+adc = ADC(26)     # GP26
 VREF = 3.3
 
 while True:

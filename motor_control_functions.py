@@ -6,8 +6,8 @@ from line_sensor_control import read_sensors
 left_dir = 4
 left_pwm = 5
 
-right_dir = 6
-right_pwm = 7 
+right_dir = 7
+right_pwm = 6 
 
 l_dir = Pin(left_dir, Pin.OUT)
 l_pwm = PWM(Pin(left_pwm)); l_pwm.freq(1000)

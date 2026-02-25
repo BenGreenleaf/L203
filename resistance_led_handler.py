@@ -9,8 +9,8 @@ def resistance_loop():
 
     green_led = Pin(28, Pin.OUT)
     red_led = Pin(16, Pin.OUT)  # Pin 27 = GP27 (labelled 33 on the jumper)
-    yellow_led = Pin(21, Pin.OUT)  # Pin 26 = GP26 (labelled 32 on the jumper)
-    blue_led = Pin(22, Pin.OUT)  # Pin 22 = GP22 (labelled 31 on the jumper)
+    yellow_led = Pin(11, Pin.OUT)  # Pin 26 = GP26 (labelled 32 on the jumper)
+    blue_led = Pin(14, Pin.OUT)  # Pin 22 = GP22 (labelled 31 on the jumper)
 
     tolerance = 0.05
 
@@ -52,6 +52,11 @@ def resistance_loop():
             green_led.value(0)
             yellow_led.value(1)
             blue_led.value(0)
+        blue_led.value(1)
+        yellow_led.value(1)
+        sleep(0.5)
+        blue_led.value(0)
+        yellow_led.value(0)
         sleep(0.5)
 if __name__ == "__main__":
     resistance_loop()

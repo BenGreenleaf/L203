@@ -18,8 +18,8 @@ print("Welcome to main.py!")
 
 while True: # continuous loop that controls the entire functionality
     state = sensors.read_sensors()
-    control.mode = control.update_mode(state, control.mode)
-    control.update_actions(state, control.mode)
+    control.mode, control.phase = control.update_mode(state, control.mode, control.phase)
+    control.update_actions(state, control.mode, control.phase)
     sleep(0.01) # to be adjusted after testing
 
 

@@ -21,6 +21,9 @@ while True: # continuous loop that controls the entire functionality
     control.mode, control.phase = control.update_mode(state, control.mode, control.phase)
     control.update_actions(state, control.mode, control.phase)
     sleep(0.01) # to be adjusted after testing
+    print(f"State: {state}, Mode: {control.mode}, Phase: {control.phase}") # for testing/debugging - can be removed later
+
+
 
 
 # Uncomment the test to run

@@ -7,8 +7,8 @@ def resistance_loop():
     VREF = 3.3
     R_KNOWN = 10000.0  # 10k resistor
 
-    green_led = Pin(28, Pin.OUT)
-    red_led = Pin(16, Pin.OUT)  # Pin 27 = GP27 (labelled 33 on the jumper)
+    green_led = Pin(10, Pin.OUT)
+    red_led = Pin(12, Pin.OUT)  # Pin 27 = GP27 (labelled 33 on the jumper)
     yellow_led = Pin(11, Pin.OUT)  # Pin 26 = GP26 (labelled 32 on the jumper)
     blue_led = Pin(14, Pin.OUT)  # Pin 22 = GP22 (labelled 31 on the jumper)
 
@@ -54,9 +54,14 @@ def resistance_loop():
             blue_led.value(0)
         blue_led.value(1)
         yellow_led.value(1)
+        green_led.value(1)
+        red_led.value(1)
+        
         sleep(0.5)
         blue_led.value(0)
         yellow_led.value(0)
+        green_led.value(0)
+        red_led.value(0)
         sleep(0.5)
 if __name__ == "__main__":
     resistance_loop()

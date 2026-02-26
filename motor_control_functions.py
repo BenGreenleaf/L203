@@ -3,7 +3,7 @@ from utime import sleep
 from line_sensor_control import read_sensors
 
 
-left_dir = 4
+left_dir = 4 #IF MOTORS ARE BACKWARDS, FLIP THESE
 left_pwm = 5
 
 right_dir = 7

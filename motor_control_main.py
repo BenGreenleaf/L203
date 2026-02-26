@@ -7,38 +7,53 @@ import motor_control_functions as motor
 
 speed = 50 #desired speed (just as a variable for now, can update or change depending on mode)
 current_speed = 1
-mode = "line following"
+mode = "LINE_FOLLOWING"
+phase = None 
 
 #delays for movement/rotation: need to measure distance between detecting the lines and being over the centre point of a corner. replace 0.5 with this distance/angular displacement.
 rotation_delay = 0.5 / current_speed # will need to be found from testing - may need to rotate/move just beyond the time when the sensors detect the line in order to travel in straight lines
 travelling_delay = 0.5 / current_speed 
 
-def update_mode(state, mode): # mode is the higher level state of the robot, state is the line sensor states
-    if mode == "line following":
+def update_mode(state, mode, phase): # mode is the higher level state of the robot shown in capitals, state is the line sensor states, phase is the sub state of a mode to protect against changing states mid transition (shown in lower case)
+    if mode == "LINE_FOLLOWING":
         if state == (0,0,0,1): 
-            return "strict right turn" # strict right turning
+            return "RIGHT_TURN", "turning"
         elif state == (1,0,0,0):
-            return "strict left turn"
+            return "LEFT_TURN", "turning"
         elif state == (1,0,0,1):
-            return "stop"
+            return "STOP", "turning"
         elif state == (0,0,0,0):
-            return "find line"
+            return "FIND_LINE", None
+        elif state == (1,1,1,1):
+            return "BLOCK_DEPOSIT", None
+        elif state in [(0,1,0,0), (1,1,0,0)]:
+            return "LINE_FOLLOWING", "right drifted"
         else:
-            return "line following"
+            return "LINE_FOLLOWING", None
         
-    elif mode == "strict right turn":
+    elif mode == "RIGHT_TURN":
         if state == (0,1,1,1):
-            return "line following"
+            return "RIGHT_TURN", "exiting"
+        elif state == (0,1,1,0):
+            return "LINE_FOLLOWING", None
         else:
-            return "strict right turn"
+            return "RIGHT_TURN", "turning"
 
-    elif mode == "strict left turn":
+    elif mode == "LEFT_TURN":
         if state == (1,1,1,0):
-            return "line following"
+            return "LINE_FOLLOWING", "exiting"
+        elif state == (0,1,1,0):
+            return "LINE_FOLLOWING", None
         else:
-            return "strict left turn"
-        
-
+            return "LEFT_TURN", "turning"
+    
+    elif mode == "STOP":
+        if state == (1,1,1,1):
+            return "STOP", "exiting"
+        elif state == (0,1,1,0):
+            return "LINE_FOLLOWING", None
+        else:
+            return "STOP", "turning"
 
         
   
@@ -56,7 +71,7 @@ def update_mode(state, mode): # mode is the higher level state of the robot, sta
         return "find line" # if it gets lost / when starting
 
 
-def update_actions(state, mode):
+def update_actions(state, mode, phase):
     if mode == "strict right turn":
         motor.turn_right(speed)
 
@@ -64,10 +79,12 @@ def update_actions(state, mode):
         if state == (0,1,1,0):
             motor.set_left(speed)
             motor.set_right(speed)
-        elif state == (0,1,0,0):
-            motor.set_left(speed * 0.8)
-        elif state == (0,0,1,0):
-            motor.set_right(speed * 0.8)
+        elif state in [(0,1,0,0), (1,1,0,0)]:
+            motor.set_right(speed * 0.6)
+            motor.set_left(speed)
+        elif state in[(0,0,1,0), (0,0,1,1)]:
+            motor.set_right(speed)
+            motor.set_left(speed * 0.6)
 
     elif mode == "strict left turn":
         motor.turn_left(speed)

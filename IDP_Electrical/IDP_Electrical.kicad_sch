@@ -3800,6 +3800,159 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "IDP_sample:Ultrasonic_Distance_Sensor"
+			(pin_names
+				(offset 1)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "SEN0307"
+				(at 2.54 7.62 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "https://www.dfrobot.com/product-1862.html"
+				(at 2.54 20.32 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "URM09 Ultrasonic Distance Sensor (2～500cm, Analog)"
+				(at 2.54 22.86 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Ultrasonic_Distance_Sensor_0_1"
+				(circle
+					(center -5.08 10.16)
+					(radius 0.0001)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "Ultrasonic_Distance_Sensor_1_1"
+				(rectangle
+					(start -20.32 15.24)
+					(end 25.4 -5.08)
+					(stroke
+						(width 0)
+						(type solid)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(circle
+					(center -10.16 5.08)
+					(radius 7.62)
+					(stroke
+						(width 0)
+						(type solid)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(circle
+					(center 15.24 5.08)
+					(radius 7.62)
+					(stroke
+						(width 0)
+						(type solid)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin power_in line
+					(at 0 -10.16 90)
+					(length 5.08)
+					(name "GND_Black"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 2.54 -10.16 90)
+					(length 5.08)
+					(name "3V3_Red"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 5.08 -10.16 90)
+					(length 5.08)
+					(name "Analog_Ouput_Blue"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 	)
 	(text "150\n"
 		(exclude_from_sim no)
@@ -3848,6 +4001,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "285a67a2-2839-4f26-9266-0f1ec5cdf483")
+	)
+	(junction
+		(at 199.39 115.57)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "394ce2fc-22a1-4ca1-8fd5-c5a78495381e")
 	)
 	(junction
 		(at 68.58 97.79)
@@ -3908,6 +4067,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "7bba7268-cc06-4ca5-8f05-6577eef09640")
+	)
+	(junction
+		(at 195.58 110.49)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "818749a8-729e-4cd4-bac9-162fc83fa81d")
 	)
 	(junction
 		(at 57.15 119.38)
@@ -4147,6 +4312,16 @@
 	)
 	(wire
 		(pts
+			(xy 86.36 107.95) (xy 86.36 46.99)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0ff4858a-8ab7-4e87-bad0-94321218627e")
+	)
+	(wire
+		(pts
 			(xy 41.91 119.38) (xy 57.15 119.38)
 		)
 		(stroke
@@ -4164,6 +4339,16 @@
 			(type default)
 		)
 		(uuid "12078dfd-a77a-4c78-ac2e-248582fc9787")
+	)
+	(wire
+		(pts
+			(xy 195.58 120.65) (xy 205.74 120.65)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "126479a2-9f3c-4e77-be11-117169715eba")
 	)
 	(wire
 		(pts
@@ -4197,6 +4382,16 @@
 	)
 	(wire
 		(pts
+			(xy 83.82 54.61) (xy 83.82 110.49)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "158e246a-d0c9-4bd0-9caf-696e076c92d3")
+	)
+	(wire
+		(pts
 			(xy 55.88 57.15) (xy 49.53 57.15)
 		)
 		(stroke
@@ -4214,6 +4409,36 @@
 			(type default)
 		)
 		(uuid "17d3b298-2ff0-4b0a-86c0-9a4aed2b151e")
+	)
+	(wire
+		(pts
+			(xy 88.9 39.37) (xy 88.9 118.11)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "18eea2f6-cd5a-4d2c-a73f-1e0dacac6291")
+	)
+	(wire
+		(pts
+			(xy 168.91 105.41) (xy 187.96 105.41)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "19137091-f500-404d-becf-4a9b65a94e69")
+	)
+	(wire
+		(pts
+			(xy 86.36 107.95) (xy 92.71 107.95)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1aa79d4c-0518-43b9-8e1e-7e9856addf17")
 	)
 	(wire
 		(pts
@@ -4237,13 +4462,13 @@
 	)
 	(wire
 		(pts
-			(xy 83.82 107.95) (xy 83.82 54.61)
+			(xy 83.82 110.49) (xy 92.71 110.49)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "228887bb-9a6b-472b-ac7d-c4918dd50dc9")
+		(uuid "206f5304-b8e8-4b06-b856-419390393797")
 	)
 	(wire
 		(pts
@@ -4284,6 +4509,16 @@
 			(type default)
 		)
 		(uuid "2b8bd79b-5a7b-4da1-8986-7f4e0a8fca15")
+	)
+	(wire
+		(pts
+			(xy 195.58 110.49) (xy 195.58 120.65)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2d965e02-1b61-4acf-9bdb-dd8d9bc08af7")
 	)
 	(wire
 		(pts
@@ -4507,16 +4742,6 @@
 	)
 	(wire
 		(pts
-			(xy 92.71 107.95) (xy 83.82 107.95)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4e49b148-719d-41cd-9c7e-c7d08cbe8414")
-	)
-	(wire
-		(pts
 			(xy 52.07 93.98) (xy 52.07 121.92)
 		)
 		(stroke
@@ -4534,6 +4759,16 @@
 			(type default)
 		)
 		(uuid "557a0391-2456-4d78-80a1-00dbe76cfa0d")
+	)
+	(wire
+		(pts
+			(xy 203.2 124.46) (xy 187.96 124.46)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "56dc5d0f-32ca-46d7-8af1-b76cf0bd89e9")
 	)
 	(wire
 		(pts
@@ -4567,6 +4802,16 @@
 	)
 	(wire
 		(pts
+			(xy 203.2 129.54) (xy 203.2 124.46)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5c0706ca-6163-4d0d-a0d5-f577aeaf71f0")
+	)
+	(wire
+		(pts
 			(xy 212.09 78.74) (xy 195.58 78.74)
 		)
 		(stroke
@@ -4587,16 +4832,6 @@
 	)
 	(wire
 		(pts
-			(xy 88.9 105.41) (xy 92.71 105.41)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "617fb289-d050-4b89-9def-191b5bbf065f")
-	)
-	(wire
-		(pts
 			(xy 41.91 88.9) (xy 48.26 88.9)
 		)
 		(stroke
@@ -4607,7 +4842,17 @@
 	)
 	(wire
 		(pts
-			(xy 81.28 62.23) (xy 81.28 118.11)
+			(xy 208.28 115.57) (xy 208.28 129.54)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "63002e21-6203-4278-9d5e-0441b7777ac6")
+	)
+	(wire
+		(pts
+			(xy 81.28 62.23) (xy 81.28 105.41)
 		)
 		(stroke
 			(width 0)
@@ -4654,6 +4899,16 @@
 			(type default)
 		)
 		(uuid "68dd2274-9330-4032-84f0-45c9a5dceefa")
+	)
+	(wire
+		(pts
+			(xy 88.9 118.11) (xy 92.71 118.11)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6951c39f-ea99-496c-adeb-6c46b1b50a87")
 	)
 	(wire
 		(pts
@@ -4704,16 +4959,6 @@
 			(type default)
 		)
 		(uuid "6d9a7c91-9ce8-4c20-812f-18631451f687")
-	)
-	(wire
-		(pts
-			(xy 92.71 110.49) (xy 86.36 110.49)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7022fd1e-ea5d-4679-8299-3538893caf6f")
 	)
 	(wire
 		(pts
@@ -4967,6 +5212,16 @@
 	)
 	(wire
 		(pts
+			(xy 199.39 115.57) (xy 208.28 115.57)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a01e8e4e-c473-40a4-b3ea-990da0089d3b")
+	)
+	(wire
+		(pts
 			(xy 68.58 97.79) (xy 92.71 97.79)
 		)
 		(stroke
@@ -5037,16 +5292,6 @@
 	)
 	(wire
 		(pts
-			(xy 81.28 118.11) (xy 92.71 118.11)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a9794d44-79b1-4836-9418-34154784fa08")
-	)
-	(wire
-		(pts
 			(xy 212.09 63.5) (xy 199.39 63.5)
 		)
 		(stroke
@@ -5094,16 +5339,6 @@
 			(type default)
 		)
 		(uuid "b2c2044d-161d-4f3a-8904-485da717cb43")
-	)
-	(wire
-		(pts
-			(xy 88.9 39.37) (xy 88.9 105.41)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b2e190f7-131f-4bcf-8400-2f3eae0e4443")
 	)
 	(wire
 		(pts
@@ -5237,6 +5472,16 @@
 	)
 	(wire
 		(pts
+			(xy 205.74 120.65) (xy 205.74 129.54)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c3c9fdbc-4008-4c81-ae0a-21eea9c0e38b")
+	)
+	(wire
+		(pts
 			(xy 120.65 157.48) (xy 120.65 148.59)
 		)
 		(stroke
@@ -5267,16 +5512,6 @@
 	)
 	(wire
 		(pts
-			(xy 86.36 110.49) (xy 86.36 46.99)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d2bfa465-e799-481f-9cf3-24390219bf2e")
-	)
-	(wire
-		(pts
 			(xy 71.12 49.53) (xy 91.44 49.53)
 		)
 		(stroke
@@ -5304,6 +5539,16 @@
 			(type default)
 		)
 		(uuid "d678200b-5ccc-43ed-8441-9c1dd5e00485")
+	)
+	(wire
+		(pts
+			(xy 187.96 124.46) (xy 187.96 105.41)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d9408ed0-fdb6-42c4-9ced-4e4ce00cb8c9")
 	)
 	(wire
 		(pts
@@ -5394,6 +5639,16 @@
 			(type default)
 		)
 		(uuid "e4db45a5-a46b-4574-8695-621000347e1f")
+	)
+	(wire
+		(pts
+			(xy 81.28 105.41) (xy 92.71 105.41)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e609f242-02bf-4824-aeb3-3fed8c72d5c0")
 	)
 	(wire
 		(pts
@@ -7301,6 +7556,79 @@
 			(project ""
 				(path "/ce89d3df-0ec9-4092-8b0c-885a49b1b5ae"
 					(reference "PushButton1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "IDP_sample:Ultrasonic_Distance_Sensor")
+		(at 208.28 139.7 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "edc8f31b-f673-4ec3-acc2-3e32683fb939")
+		(property "Reference" "SEN1"
+			(at 205.74 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "~"
+			(at 229.87 142.2399 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 208.28 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.dfrobot.com/product-1862.html"
+			(at 229.87 144.7799 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Description" "URM09 Ultrasonic Distance Sensor (2～500cm, Analog)"
+			(at 229.87 147.3199 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "1"
+			(uuid "513f4041-fb1a-4a8c-915d-f1c153659deb")
+		)
+		(pin "2"
+			(uuid "eab0574e-0529-4eac-ba8f-743118564f99")
+		)
+		(pin "3"
+			(uuid "de802146-f6ee-43c6-8aab-19340f375ce0")
+		)
+		(instances
+			(project ""
+				(path "/ce89d3df-0ec9-4092-8b0c-885a49b1b5ae"
+					(reference "SEN1")
 					(unit 1)
 				)
 			)

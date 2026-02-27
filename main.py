@@ -14,6 +14,7 @@ import motor_control_main as control
 import line_sensor_control as sensors
 
 print("Welcome to main.py!")
+sleep(4)
 
 
 while True: # continuous loop that controls the entire functionality

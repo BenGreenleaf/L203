@@ -29,8 +29,8 @@ def update_mode(state, mode, phase): # mode is the higher level state of the rob
             return "LEFT_TURN", "turning"
         elif state == (1,0,0,1):
             return "STOP", "turning"
-        elif state == (0,0,0,0):
-            return "FIND_LINE", None
+        #elif state == (0,0,0,0):
+        #    return "FIND_LINE", None
         # elif state == (1,1,1,1):
         #     return "BLOCK_DEPOSIT", None
         else:
@@ -40,6 +40,7 @@ def update_mode(state, mode, phase): # mode is the higher level state of the rob
         if state == (0,1,1,1):
             return "RIGHT_TURN", "exiting"
         elif state == (0,1,1,0):
+            sleep(0.3)
             return "LINE_FOLLOWING", None
         else:
             return "RIGHT_TURN", "turning"
@@ -48,6 +49,7 @@ def update_mode(state, mode, phase): # mode is the higher level state of the rob
         if state == (1,1,1,0):
             return "LEFT_TURN", "exiting"
         elif state == (0,1,1,0):
+            sleep(0.3)
             return "LINE_FOLLOWING", None
         else:
             return "LEFT_TURN", "turning"

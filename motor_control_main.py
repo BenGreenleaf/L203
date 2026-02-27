@@ -52,45 +52,45 @@ def update_mode(state, mode, phase): # mode is the higher level state of the rob
         else:
             return "LEFT_TURN", "turning"
         
-    elif mode == "FIND_LINE":
+    # elif mode == "FIND_LINE":
 
-        if state == (1,1,1,0):
-            advance_counter = 0
-            return "FIND_LINE", "diagonal_approach_right_advance"
-        elif state == (0,1,1,1):
-            advance_counter = 0
-            return "FIND_LINE", "diagonal_approach_left_advance"
-        elif state in [(1,0,0,0), (1,1,0,0)]:
-            last_seen = "left"
-            return "FIND_LINE", "left_found"
-        elif state in [(0,0,0,1), (0,0,1,1)]:
-            last_seen = "right"
-            return "FIND_LINE", "right_found"
+    #     if state == (1,1,1,0):
+    #         advance_counter = 0
+    #         return "FIND_LINE", "diagonal_approach_right_advance"
+    #     elif state == (0,1,1,1):
+    #         advance_counter = 0
+    #         return "FIND_LINE", "diagonal_approach_left_advance"
+    #     elif state in [(1,0,0,0), (1,1,0,0)]:
+    #         last_seen = "left"
+    #         return "FIND_LINE", "left_found"
+    #     elif state in [(0,0,0,1), (0,0,1,1)]:
+        #     last_seen = "right"
+        #     return "FIND_LINE", "right_found"
         
-        if phase in ["diagonal_approach_right_advance", "diagonal_approach_left_advance"]:
-            advance_counter += 1
-            if advance_counter > 4:   # tune this
-                advance_counter = 0
-                if phase == "diagonal_approach_right_advance":
-                    return "FIND_LINE", "diagonal_approach_right_rotate"
-                else:
-                    return "FIND_LINE", "diagonal_approach_left_rotate"
-            return "FIND_LINE", phase
+        # if phase in ["diagonal_approach_right_advance", "diagonal_approach_left_advance"]:
+        #     advance_counter += 1
+        #     if advance_counter > 4:   # tune this
+        #         advance_counter = 0
+        #         if phase == "diagonal_approach_right_advance":
+        #             return "FIND_LINE", "diagonal_approach_right_rotate"
+        #         else:
+        #             return "FIND_LINE", "diagonal_approach_left_rotate"
+        #     return "FIND_LINE", phase
         
-        elif phase in ["diagonal_approach_right_rotate", "diagonal_approach_left_rotate"]:
-            if state == (0,1,1,0):
-                return "LINE_FOLLOWING", None
-            return "FIND_LINE", phase
+        # elif phase in ["diagonal_approach_right_rotate", "diagonal_approach_left_rotate"]:
+        #     if state == (0,1,1,0):
+        #         return "LINE_FOLLOWING", None
+        #     return "FIND_LINE", phase
         
-        elif phase == "advance":
-            advance_counter += 1
-            if advance_counter > 7: #CHECK NUMBER AND EDIT VIA TESTING
-                advance_counter = 0
-                return "LINE_FOLLOWING", None
-            return "FIND_LINE", "advance"
+        # elif phase == "advance":
+        #     advance_counter += 1
+        #     if advance_counter > 7: #CHECK NUMBER AND EDIT VIA TESTING
+        #         advance_counter = 0
+        #         return "LINE_FOLLOWING", None
+        #     return "FIND_LINE", "advance"
 
-        else:
-            return "FIND_LINE", None
+        # else:
+        #     return "FIND_LINE", None
     
     elif mode == "STOP":
         if state == (1,1,1,1):
@@ -162,37 +162,37 @@ def update_actions(state, mode, phase):
             motor.set_left(speed)
             motor.set_right(speed)
 
-    elif mode == "FIND_LINE": # first draft 
-        if phase == None:
-            if last_seen == "left":
-                motor.set_left(0.5* speed)
-                motor.set_right(speed)
-            elif last_seen == "right":
-                motor.set_left(speed)
-                motor.set_right(0.5* speed)
-            else:
-                motor.set_left(speed)
-                motor.set_right(speed * 0.5) #need to add ultrasound sensor inputs here
-        elif phase == "advance":
-            motor.set_left(0.7 * speed)
-            motor.set_right(0.7 * speed)
-        elif phase == "left_found":
-            motor.set_left(-speed)
-            motor.set_right(speed)
-        elif phase == "right_found":
-            motor.set_left(speed)
-            motor.set_right(-speed)
-        elif phase in ["diagonal_approach_right_advance", "diagonal_approach_left_advance"]:
-            creep = 0.7 * speed
-            motor.set_left(creep)
-            motor.set_right(creep)
+    # elif mode == "FIND_LINE": # first draft 
+    #     if phase == None:
+    #         if last_seen == "left":
+    #             motor.set_left(0.5* speed)
+    #             motor.set_right(speed)
+    #         elif last_seen == "right":
+    #             motor.set_left(speed)
+    #             motor.set_right(0.5* speed)
+    #         else:
+    #             motor.set_left(speed)
+    #             motor.set_right(speed * 0.5) #need to add ultrasound sensor inputs here
+    #     elif phase == "advance":
+    #         motor.set_left(0.7 * speed)
+    #         motor.set_right(0.7 * speed)
+    #     elif phase == "left_found":
+    #         motor.set_left(-speed)
+    #         motor.set_right(speed)
+    #     elif phase == "right_found":
+    #         motor.set_left(speed)
+    #         motor.set_right(-speed)
+    #     elif phase in ["diagonal_approach_right_advance", "diagonal_approach_left_advance"]:
+    #         creep = 0.7 * speed
+    #         motor.set_left(creep)
+    #         motor.set_right(creep)
         
-        elif phase == "diagonal_approach_right_rotate":
-            motor.set_left(speed)
-            motor.set_right(-speed)
-        elif phase == "diagonal_approach_left_rotate":
-            motor.set_left(-speed)
-            motor.set_right(speed)
+    #     elif phase == "diagonal_approach_right_rotate":
+    #         motor.set_left(speed)
+    #         motor.set_right(-speed)
+    #     elif phase == "diagonal_approach_left_rotate":
+    #         motor.set_left(-speed)
+    #         motor.set_right(speed)
             
 
 

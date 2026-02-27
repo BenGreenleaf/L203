@@ -5,22 +5,22 @@ from utime import sleep
 from line_sensor_control import read_sensors
 import motor_control_functions as motor
 
-speed = 40 #desired speed (just as a variable for now, can update or change depending on mode)
+speed = 60 #desired speed (just as a variable for now, can update or change depending on mode)
 mode = "LINE_FOLLOWING"
 phase = None 
 last_seen = None
 last_error = 0
 error = 0
+advance_counter = 0
 
 def update_error(new_error):
     global error, last_error
-    global last_error
     last_error = error
     error = new_error
     
 
 def update_mode(state, mode, phase): # mode is the higher level state of the robot shown in capitals, state is the line sensor states, phase is the sub state of a mode to protect against changing states mid transition (shown in lower case)
-    global last_seen
+    global last_seen, advance_counter
     
     if mode == "LINE_FOLLOWING":
         if state == (0,0,0,1): 
@@ -53,16 +53,42 @@ def update_mode(state, mode, phase): # mode is the higher level state of the rob
             return "LEFT_TURN", "turning"
         
     elif mode == "FIND_LINE":
-        if state in [(1,0,0,1), (1,1,1,0), (0,1,1,1)]: #havent included 0110 as if it meets this it is likely to then meet 1001, which is the better state to intiate a rotation
-            return "FIND_LINE", "rotating"
+
+        if state == (1,1,1,0):
+            advance_counter = 0
+            return "FIND_LINE", "diagonal_approach_right_advance"
+        elif state == (0,1,1,1):
+            advance_counter = 0
+            return "FIND_LINE", "diagonal_approach_left_advance"
         elif state in [(1,0,0,0), (1,1,0,0)]:
             last_seen = "left"
             return "FIND_LINE", "left_found"
         elif state in [(0,0,0,1), (0,0,1,1)]:
             last_seen = "right"
             return "FIND_LINE", "right_found"
-        elif state == (0,1,1,0) and phase == "rotating": 
-            return "LINE_FOLLOWING", None
+        
+        if phase in ["diagonal_approach_right_advance", "diagonal_approach_left_advance"]:
+            advance_counter += 1
+            if advance_counter > 4:   # tune this
+                advance_counter = 0
+                if phase == "diagonal_approach_right_advance":
+                    return "FIND_LINE", "diagonal_approach_right_rotate"
+                else:
+                    return "FIND_LINE", "diagonal_approach_left_rotate"
+            return "FIND_LINE", phase
+        
+        elif phase in ["diagonal_approach_right_rotate", "diagonal_approach_left_rotate"]:
+            if state == (0,1,1,0):
+                return "LINE_FOLLOWING", None
+            return "FIND_LINE", phase
+        
+        elif phase == "advance":
+            advance_counter += 1
+            if advance_counter > 7: #CHECK NUMBER AND EDIT VIA TESTING
+                advance_counter = 0
+                return "LINE_FOLLOWING", None
+            return "FIND_LINE", "advance"
+
         else:
             return "FIND_LINE", None
     
@@ -77,7 +103,7 @@ def update_mode(state, mode, phase): # mode is the higher level state of the rob
     return mode, phase
 
 def update_actions(state, mode, phase):
-    global error, last_error, last_seen
+    global error, last_error, last_seen, advance_counter
 
     if mode == "RIGHT_TURN":
         if phase == "turning":
@@ -103,8 +129,8 @@ def update_actions(state, mode, phase):
 
         update_error(new_error)
 
-        Kp = 10
-        Kd = 5 #no idea whether these are right or not will adjust - test tomorrow
+        Kp = 8
+        Kd = 2 #no idea whether these are right or not will adjust - test tomorrow
 
         d_error = error - last_error
         correction = Kp * error + Kd * d_error
@@ -147,15 +173,27 @@ def update_actions(state, mode, phase):
             else:
                 motor.set_left(speed)
                 motor.set_right(speed * 0.5) #need to add ultrasound sensor inputs here
-        elif phase == "rotating":
-            motor.set_left(-speed)
-            motor.set_right(speed)
+        elif phase == "advance":
+            motor.set_left(0.7 * speed)
+            motor.set_right(0.7 * speed)
         elif phase == "left_found":
             motor.set_left(-speed)
             motor.set_right(speed)
         elif phase == "right_found":
             motor.set_left(speed)
             motor.set_right(-speed)
+        elif phase in ["diagonal_approach_right_advance", "diagonal_approach_left_advance"]:
+            creep = 0.7 * speed
+            motor.set_left(creep)
+            motor.set_right(creep)
+        
+        elif phase == "diagonal_approach_right_rotate":
+            motor.set_left(speed)
+            motor.set_right(-speed)
+        elif phase == "diagonal_approach_left_rotate":
+            motor.set_left(-speed)
+            motor.set_right(speed)
+            
 
 
     elif mode == "STOP": #may need changing because the back might be too long to turn in place - may have to reverse first

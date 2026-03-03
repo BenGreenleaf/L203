@@ -5,13 +5,17 @@ from utime import sleep
 from line_sensor_control import read_sensors
 import motor_control_functions as motor
 
-speed = 60 #desired speed (just as a variable for now, can update or change depending on mode)
+speed = 80 #desired speed (just as a variable for now, can update or change depending on mode)
 mode = "LINE_FOLLOWING"
 phase = None 
 last_seen = None
 last_error = 0
 error = 0
 advance_counter = 0
+last_dir = 0
+align_ticks = 0
+centre_streak = 0
+reverse_ticks = 0
 
 def update_error(new_error):
     global error, last_error
@@ -20,13 +24,15 @@ def update_error(new_error):
     
 
 def update_mode(state, mode, phase): # mode is the higher level state of the robot shown in capitals, state is the line sensor states, phase is the sub state of a mode to protect against changing states mid transition (shown in lower case)
-    global last_seen, advance_counter
+    global last_seen, advance_counter, reverse_ticks
     
     if mode == "LINE_FOLLOWING":
-        if state == (0,0,0,1): 
-            return "RIGHT_TURN", "turning"
+        if state == (0,0,0,1):
+            reverse_ticks = 7
+            return "RIGHT_TURN", "reversing" #changed turning to reversing
         elif state == (1,0,0,0):
-            return "LEFT_TURN", "turning"
+            reverse_ticks = 7 # added these for second mode. 
+            return "LEFT_TURN", "reversing"
         elif state == (1,0,0,1):
             return "STOP", "turning"
         #elif state == (0,0,0,0):
@@ -37,20 +43,34 @@ def update_mode(state, mode, phase): # mode is the higher level state of the rob
             return "LINE_FOLLOWING", None
         
     elif mode == "RIGHT_TURN":
-        if state == (0,1,1,1):
+        if phase == "reversing": #can revert this if it doesnt work
+            if reverse_ticks > 0:
+                return "RIGHT_TURN", "reversing"
+            else:
+                return "RIGHT_TURN", "turning"
+        
+        if state == (0,1,1,1) and phase == "turning": 
             return "RIGHT_TURN", "exiting"
-        elif state == (0,1,1,0):
-            sleep(0.3)
+        elif state == (0,1,1,0) and phase == "exiting":
             return "LINE_FOLLOWING", None
+        elif state == (0,1,1,1) and phase == "exiting":
+            return "RIGHT_TURN", "exiting"
         else:
             return "RIGHT_TURN", "turning"
 
     elif mode == "LEFT_TURN":
-        if state == (1,1,1,0):
+        if phase == "reversing":
+            if reverse_ticks > 0:
+                return "LEFT_TURN", "reversing"
+            else:
+                return "LEFT_TURN", "turning"
+
+        if state == (1,1,1,0) and phase == "turning":
             return "LEFT_TURN", "exiting"
-        elif state == (0,1,1,0):
-            sleep(0.3)
+        elif state == (0,1,1,0) and phase == "exiting": 
             return "LINE_FOLLOWING", None
+        elif state == (1,1,1,0) and phase == "exiting":
+            return "LEFT_TURN", "exiting"
         else:
             return "LEFT_TURN", "turning"
         
@@ -105,9 +125,105 @@ def update_mode(state, mode, phase): # mode is the higher level state of the rob
     return mode, phase
 
 def update_actions(state, mode, phase):
-    global error, last_error, last_seen, advance_counter
+    global error, last_error, last_seen, advance_counter, last_dir, align_ticks, centre_streak, reverse_ticks
+
+    turn_speed = 60 # test and adjust
+    correction_speed = 10
+
+#variation 1 of the turning code
+
+    # if mode == "RIGHT_TURN":
+    #     if phase == "turning":
+    #         motor.set_left(0.95*speed)
+    #         motor.set_right(-1.2*speed)
+    #     elif phase == "exiting":
+    #         motor.set_left(speed)
+    #         motor.set_right(speed)
+
+
+    # elif mode == "LEFT_TURN":
+    #     if phase == "turning":
+    #         motor.set_left(-1.2*speed)
+    #         motor.set_right(1.05*speed)
+    #     elif phase == "exiting":
+    #         motor.set_left(speed)
+    #         motor.set_right(speed)
+
+# variation 2 of turning code
+
 
     if mode == "RIGHT_TURN":
+        if phase == "reversing":
+            if reverse_ticks > 0:
+                motor.set_left(int(-0.7*speed))
+                motor.set_right(int(-0.7*speed))
+                reverse_ticks -= 1
+        elif phase == "turning":
+            motor.set_left(1*turn_speed)
+            motor.set_right(-1.2*turn_speed)
+        elif phase == "exiting":
+            motor.set_left(speed)
+            motor.set_right(speed)
+
+
+    elif mode == "LEFT_TURN":
+        if phase == "reversing":
+            if reverse_ticks > 0:
+                motor.set_left(int(-0.7*speed))
+                motor.set_right(int(-0.7*speed))
+                reverse_ticks -= 1
+        elif phase == "turning":
+            motor.set_left(-1.2*turn_speed)
+            motor.set_right(1.05*turn_speed)
+        elif phase == "exiting":
+            motor.set_left(speed)
+            motor.set_right(speed) 
+
+
+    elif mode == "LINE_FOLLOWING":
+        inner = (state[1], state[2])
+        if inner == (1,1):
+            new_error = 0
+        elif inner == (1,0):
+            new_error = 1
+        elif inner == (0,1):
+            new_error = -1
+        else:
+            new_error = error
+
+        update_error(new_error)
+        base = speed #adjust
+        if error != 0:
+            last_dir = error
+            align_ticks = 0 
+            centre_streak = 0
+
+            kp = 20
+            motor.set_left(int(base - kp * error))
+            motor.set_right(int(base + kp * error))
+
+        else:
+            centre_streak += 1
+            if centre_streak == 1 and last_dir != 0:
+                align_ticks = 15 #adjust
+            if align_ticks > 0:
+                motor.set_left(int(base - correction_speed*(-last_dir)))
+                motor.set_right(int(base + correction_speed*(-last_dir)))
+                align_ticks -= 1
+            else:
+                motor.set_left(speed)
+                motor.set_right(speed)
+
+                if centre_streak > 5:
+                    last_dir = 0
+
+
+
+
+
+
+
+    elif mode == "STOP": #may need changing because the back might be too long to turn in place - may have to reverse first
         if phase == "turning":
             motor.set_left(speed)
             motor.set_right(-speed)
@@ -115,55 +231,8 @@ def update_actions(state, mode, phase):
             motor.set_left(speed)
             motor.set_right(speed)
 
-    elif mode == "LINE_FOLLOWING":
-        if state == (0,1,1,0):
-            new_error = 0
-        elif state == (0,1,0,0):
-            new_error = 1
-        elif state == (1,1,0,0):
-            new_error = 2
-        elif state == (0,0,1,0):
-            new_error = -1
-        elif state == (0,0,1,1):
-            new_error = -2
-        else:
-            new_error = error
 
-        update_error(new_error)
-
-        Kp = 8
-        Kd = 2 #no idea whether these are right or not will adjust - test tomorrow
-
-        d_error = error - last_error
-        correction = Kp * error + Kd * d_error
-
-        motor.set_left(speed - correction)
-        motor.set_right(speed + correction)
-
-
-
-
-
-
-
-        # if phase == None:
-        #     motor.set_left(speed)
-        #     motor.set_right(speed)
-        # elif phase == "right drifted": #currently will be very oscillatory - need to scale the speed changes with how far we are from the line, or ramp the speed changes slowly down to decrease oscillations.
-        #     motor.set_right(speed * 0.6)
-        #     motor.set_left(speed)
-        # elif phase == "left drifted":
-        #     motor.set_right(speed)
-        #     motor.set_left(speed * 0.6)
-
-    elif mode == "LEFT_TURN":
-        if phase == "turning":
-            motor.set_left(-speed)
-            motor.set_right(speed)
-        elif phase == "exiting":
-            motor.set_left(speed)
-            motor.set_right(speed)
-
+        
     # elif mode == "FIND_LINE": # first draft 
     #     if phase == None:
     #         if last_seen == "left":
@@ -195,20 +264,6 @@ def update_actions(state, mode, phase):
     #     elif phase == "diagonal_approach_left_rotate":
     #         motor.set_left(-speed)
     #         motor.set_right(speed)
-            
-
-
-    elif mode == "STOP": #may need changing because the back might be too long to turn in place - may have to reverse first
-        if phase == "turning":
-            motor.set_left(speed)
-            motor.set_right(-speed)
-        elif phase == "exiting":
-            motor.set_left(speed)
-            motor.set_right(speed)
-
-
-        
-
         
 
 

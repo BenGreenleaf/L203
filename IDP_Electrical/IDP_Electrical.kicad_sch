@@ -6004,7 +6004,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal"
 			(at 226.06 130.048 90)
 			(effects
 				(font
@@ -7128,7 +7128,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal"
 			(at 240.03 130.048 90)
 			(effects
 				(font
@@ -7156,10 +7156,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "2b444641-702c-46c8-8c7b-d4f604fc1f86")
+			(uuid "2b444641-702c-46c8-8c7b-d4f604fc1f87")
 		)
 		(pin "2"
-			(uuid "74219b44-012a-4914-b098-fa683aa09527")
+			(uuid "74219b44-012a-4914-b098-fa683aa09528")
 		)
 		(instances
 			(project ""
@@ -7853,7 +7853,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
 			(at 208.28 139.7 0)
 			(effects
 				(font

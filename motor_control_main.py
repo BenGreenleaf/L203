@@ -25,7 +25,7 @@ def update_error(new_error):
     error = new_error
     
 
-def update_mode(state, mode, phase): # mode is the higher level state of the robot shown in capitals, state is the line sensor states, phase is the sub state of a mode to protect against changing states mid transition (shown in lower case)
+def update_mode(state, mode, phase, turn="None"): # mode is the higher level state of the robot shown in capitals, state is the line sensor states, phase is the sub state of a mode to protect against changing states mid transition (shown in lower case)
     global last_seen, advance_counter, reverse_ticks, turning_mode, finding_counter
         
     if mode == "INITIALISE":
@@ -42,9 +42,15 @@ def update_mode(state, mode, phase): # mode is the higher level state of the rob
                 return "RIGHT_TURN","reversing"
         
     elif mode == "LINE_FOLLOWING":
-        if state in [(0,0,0,1), (1,0,0,1)]:
+        if state == (0,0,0,1):
             reverse_ticks = 7
             return "RIGHT_TURN", "reversing" #changed turning to reversing
+        elif state == (1,0,0,1) and turn == "right":
+            reverse_ticks = 7
+            return "RIGHT_TURN", "reversing"
+        elif state == (1,0,0,1) and turn == "left":
+            reverse_ticks = 7
+            return "LEFT_TURN", "reversing"
         elif state == (1,0,0,0):
             reverse_ticks = 7 # added these for second mode. 
             return "LEFT_TURN", "reversing"
@@ -89,13 +95,13 @@ def update_mode(state, mode, phase): # mode is the higher level state of the rob
                 else:
                     return "RIGHT_TURN", "turning_start"
             elif phase == "turning_end":
-                if state == (0,1,1,1):
-                    sleep(0.17)
+                if state in [(0,1,1,1),(0,1,0,1)]:
+                    sleep(0.14)
                     return "RIGHT_TURN", "exiting"
                 else:
                     return "RIGHT_TURN", "turning_end"
             elif phase == "exiting":
-                if state == (0,1,1,0):
+                if state in [(0,1,1,0), (0,1,0,0)]:
                     return "LINE_FOLLOWING", None
                 else:
                     return "RIGHT_TURN", "exiting"
@@ -121,7 +127,7 @@ def update_mode(state, mode, phase): # mode is the higher level state of the rob
                 
         elif turning_mode == 2:
             if phase == "reversing": 
-                if state == (1,1,1,0):
+                if state in  [(1,1,1,0), (1,1,0,0)]:
                     return "LEFT_TURN", "turning_start"
                 else: 
                     return "LEFT_TURN", "reversing"
@@ -132,12 +138,12 @@ def update_mode(state, mode, phase): # mode is the higher level state of the rob
                     return "LEFT_TURN", "turning_start"
             elif phase == "turning_end":
                 if state == (1,1,1,0):
-                    sleep(0.25)
+                    sleep(0.19)
                     return "LEFT_TURN", "exiting"
                 else:
                     return "LEFT_TURN", "turning_end"
             elif phase == "exiting":
-                if state == (0,1,1,0):
+                if state in [(0,1,1,0), (0,0,1,0)]:
                     return "LINE_FOLLOWING", None
                 else:
                     return "LEFT_TURN", "exiting"
@@ -199,7 +205,7 @@ def update_actions(state, mode, phase):
     global error, last_error, last_seen, advance_counter, last_dir, align_ticks, centre_streak, reverse_ticks
 
     turn_speed = 60 # test and adjust
-    correction_speed = 20
+    correction_speed = 40
 
 #variation 1 of the turning code - old
 
@@ -303,16 +309,25 @@ def update_actions(state, mode, phase):
         else:
             new_error = error
 
+        alpha = 0.7
+        new_error = alpha*new_error + (1-alpha)*new_error
+
         update_error(new_error)
         base = speed #adjust
+        
+        if abs(error) < 0.1:
+            error = 0
+
         if error != 0:
             last_dir = error
             align_ticks = 0 
             centre_streak = 0
 
-            kp = 30
-            motor.set_left(int(base - kp * error))
-            motor.set_right(int(base + kp * error))
+            kp = 15
+            kd = 10
+            correction = kp * error + kd * (error - last_error)
+            motor.set_left(int(base - correction))
+            motor.set_right(int(base + correction))
 
         else:
             centre_streak += 1

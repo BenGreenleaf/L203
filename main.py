@@ -16,14 +16,61 @@ import motor_control_functions as func
 
 print("Welcome to main.py!")
 sleep(4)
-
+instructions = ["straight", "left", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight","straight","straight","straight","straight", "left", "straight", "right"]
+threshold_counter = [0,0,0] #t, l, r
+threshold = 2
+timeout_counter = 0
+timeout_threshold = 3
+timeout=False
 
 while True: # continuous loop that controls the entire functionality
     state = sensors.read_sensors()
-    control.mode, control.phase = control.update_mode(state, control.mode, control.phase)
+    turn = "None"
+    if timeout == True:
+        timeout_counter += 1
+        if timeout_counter >= timeout_threshold:
+            timeout = False
+            timeout_counter = 0
+    elif state == (1,0,0,1) and control.mode == "LINE_FOLLOWING": # if the robot is on the line and in line following mode, follow the line
+        threshold_counter = [threshold_counter[0]+1, 0, 0]
+        #T-Junction
+        if threshold_counter[0] >= threshold:
+            threshold_counter = [0, 0, 0]
+            if instructions[0] == "right":
+                turn = "right"
+                instructions.pop(0)
+            elif instructions[0] == "left":
+                turn = "left"
+                instructions.pop(0)
+            timeout = True
+    elif state == (1, 1, 1, 0) and control.mode == "LINE_FOLLOWING": # if the robot is at a junction and in line following mode, follow the instructions
+        #optional left turn
+        threshold_counter = [0, threshold_counter[1]+1, 0]
+        if threshold_counter[1] >= threshold:
+            threshold_counter = [0, 0, 0]
+            if instructions[0] == "left":
+                turn = "left"
+                instructions.pop(0)
+            elif instructions[0] == "straight":
+                instructions.pop(0)
+            timeout=True
+    elif state == (0, 1, 1, 1) and control.mode == "LINE_FOLLOWING": # if the robot is at a junction and in line following mode, follow the instructions
+        #optional right turn
+        threshold_counter = [0, 0, threshold_counter[2]+1]
+        if threshold_counter[2] >= threshold:
+            threshold_counter = [0, 0, 0]
+            if instructions[0] == "right":
+                turn = "right"
+                instructions.pop(0)
+            elif instructions[0] == "straight":
+                instructions.pop(0)
+            timeout=True
+    
+
+    control.mode, control.phase = control.update_mode(state, control.mode, control.phase, turn)
     control.update_actions(state, control.mode, control.phase)
     sleep(0.01) # to be adjusted after testing
-    print(f"State: {state}, Mode: {control.mode}, Phase: {control.phase},") # for testing/debugging - can be removed later
+    print(f"State: {state}, Mode: {control.mode}, Phase: {control.phase}, Next Instruction: {instructions[0] if instructions else 'None'}, Timeout: {timeout}") # for testing/debugging - can be removed later
 
 
 

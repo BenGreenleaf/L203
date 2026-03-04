@@ -304,10 +304,10 @@ def update_actions(state, mode, phase):
             new_error = error
 
         update_error(new_error)
-        base = speed #adjust
+        base = 0.7 * speed #adjust
         if error != 0:
             last_dir = error
-            align_ticks = 0 
+            # align_ticks = 0 
             centre_streak = 0
 
             kp = 30
@@ -317,7 +317,7 @@ def update_actions(state, mode, phase):
         else:
             centre_streak += 1
             if centre_streak == 1 and last_dir != 0:
-                align_ticks = 5 #adjust
+                align_ticks = 6 #adjust
             if align_ticks > 0:
                 motor.set_left(int(base - correction_speed*(-last_dir)))
                 motor.set_right(int(base + correction_speed*(-last_dir)))

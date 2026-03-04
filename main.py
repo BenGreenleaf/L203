@@ -12,6 +12,7 @@ from test_tiny_code_reader import test_tiny_code_reader
 from utime import sleep
 import motor_control_main as control
 import line_sensor_control as sensors
+import motor_control_functions as func
 
 print("Welcome to main.py!")
 sleep(4)
@@ -23,7 +24,6 @@ while True: # continuous loop that controls the entire functionality
     control.update_actions(state, control.mode, control.phase)
     sleep(0.01) # to be adjusted after testing
     print(f"State: {state}, Mode: {control.mode}, Phase: {control.phase},") # for testing/debugging - can be removed later
-
 
 
 

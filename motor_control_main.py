@@ -16,7 +16,8 @@ last_dir = 0
 align_ticks = 0
 centre_streak = 0
 reverse_ticks = 0
-turning_mode = 1 #one for original two for the new one as of 3.3.26
+turning_mode = 2 #one for original two for the new one as of 3.3.26
+finding_counter = 0
 
 def update_error(new_error):
     global error, last_error
@@ -25,23 +26,37 @@ def update_error(new_error):
     
 
 def update_mode(state, mode, phase): # mode is the higher level state of the robot shown in capitals, state is the line sensor states, phase is the sub state of a mode to protect against changing states mid transition (shown in lower case)
-    global last_seen, advance_counter, reverse_ticks, turning_mode
-    
-    if mode == "LINE_FOLLOWING":
-        if state == (0,0,0,1):
+    global last_seen, advance_counter, reverse_ticks, turning_mode, finding_counter
+        
+    if mode == "INITIALISE":
+        if phase == "find_line":
+            if state in [(1,1,1,1), (1,1,0,1), (1,0,1,1)]:
+                return "INITIALISE", "found_line"
+            else:
+                return "INITIALISE", "find_line"
+        if phase == "found_line":
+            if state in [(0,1,1,0), (0,1,0,0), (0,0,1,0)]:
+                return "INITIALISE", "exiting"
+        if phase == "exiting":
+            if state == (1,0,0,1):
+                return "RIGHT_TURN","reversing"
+        
+    elif mode == "LINE_FOLLOWING":
+        if state in [(0,0,0,1), (1,0,0,1)]:
             reverse_ticks = 7
             return "RIGHT_TURN", "reversing" #changed turning to reversing
         elif state == (1,0,0,0):
             reverse_ticks = 7 # added these for second mode. 
             return "LEFT_TURN", "reversing"
-        elif state == (1,0,0,1):
-            return "STOP", "turning"
-        #elif state == (0,0,0,0):
-        #    return "FIND_LINE", None
+        # elif state == (1,0,0,1):
+        #     return "STOP", "turning"
+        elif state == (0,0,0,0):
+            return "INITIALISE", "find_line"
         # elif state == (1,1,1,1):
         #     return "BLOCK_DEPOSIT", None
         else:
             return "LINE_FOLLOWING", None
+
         
     elif mode == "RIGHT_TURN":
         if turning_mode == 1:
@@ -64,7 +79,7 @@ def update_mode(state, mode, phase): # mode is the higher level state of the rob
         
         elif turning_mode == 2:
             if phase == "reversing": 
-                if state == (0,1,1,1):
+                if state in [(1,1,1,1), (0,1,1,1)]:
                     return "RIGHT_TURN", "turning_start"
                 else: 
                     return "RIGHT_TURN", "reversing"
@@ -75,6 +90,7 @@ def update_mode(state, mode, phase): # mode is the higher level state of the rob
                     return "RIGHT_TURN", "turning_start"
             elif phase == "turning_end":
                 if state == (0,1,1,1):
+                    sleep(0.17)
                     return "RIGHT_TURN", "exiting"
                 else:
                     return "RIGHT_TURN", "turning_end"
@@ -116,6 +132,7 @@ def update_mode(state, mode, phase): # mode is the higher level state of the rob
                     return "LEFT_TURN", "turning_start"
             elif phase == "turning_end":
                 if state == (1,1,1,0):
+                    sleep(0.25)
                     return "LEFT_TURN", "exiting"
                 else:
                     return "LEFT_TURN", "turning_end"
@@ -124,6 +141,9 @@ def update_mode(state, mode, phase): # mode is the higher level state of the rob
                     return "LINE_FOLLOWING", None
                 else:
                     return "LEFT_TURN", "exiting"
+                
+  
+
         
     # elif mode == "FIND_LINE":
 
@@ -179,7 +199,7 @@ def update_actions(state, mode, phase):
     global error, last_error, last_seen, advance_counter, last_dir, align_ticks, centre_streak, reverse_ticks
 
     turn_speed = 60 # test and adjust
-    correction_speed = 10
+    correction_speed = 20
 
 #variation 1 of the turning code - old
 
@@ -259,6 +279,18 @@ def update_actions(state, mode, phase):
                 motor.set_left(speed)
                 motor.set_right(speed)
 
+    elif mode == "INITIALISE":
+        if phase == "find_line":
+            motor.set_left(speed)
+            motor.set_right(speed)
+        if phase == "found_line":
+            motor.set_left(speed)
+            motor.set_right(speed)
+        if phase == "exiting":
+            motor.set_left(0.7*speed)
+            motor.set_right(0.7*speed)  
+
+
 
     elif mode == "LINE_FOLLOWING":
         inner = (state[1], state[2])
@@ -278,14 +310,14 @@ def update_actions(state, mode, phase):
             align_ticks = 0 
             centre_streak = 0
 
-            kp = 20
+            kp = 30
             motor.set_left(int(base - kp * error))
             motor.set_right(int(base + kp * error))
 
         else:
             centre_streak += 1
             if centre_streak == 1 and last_dir != 0:
-                align_ticks = 15 #adjust
+                align_ticks = 5 #adjust
             if align_ticks > 0:
                 motor.set_left(int(base - correction_speed*(-last_dir)))
                 motor.set_right(int(base + correction_speed*(-last_dir)))

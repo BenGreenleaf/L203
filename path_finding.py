@@ -90,7 +90,8 @@ def convert_path_to_actions(graph, path, current_orientation):
         current_orientation = direction
     return actions
 
-path, total_dist = dijkstra_shortest_path(graph, 1, 16)
-print("Shortest path:", path)
-print("Total distance:", total_dist)
-print("Directions:", convert_path_to_actions(graph, path, "north")[1:])
+if __name__ == "__main__":
+    path, total_dist = dijkstra_shortest_path(graph, 1, 16)
+    print("Shortest path:", path)
+    print("Total distance:", total_dist)
+    print("Directions:", convert_path_to_actions(graph, path, "north")[1:])

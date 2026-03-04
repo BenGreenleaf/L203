@@ -20,7 +20,7 @@ sleep(4)
 
 while True: # continuous loop that controls the entire functionality
     state = sensors.read_sensors()
-    control.mode, control.phase = control.update_mode(state, control.mode, control.phase)
+    control.mode, control.phase, control.event = control.update_mode(state, control.mode, control.phase)
     control.update_actions(state, control.mode, control.phase)
     sleep(0.01) # to be adjusted after testing
     print(f"State: {state}, Mode: {control.mode}, Phase: {control.phase},") # for testing/debugging - can be removed later

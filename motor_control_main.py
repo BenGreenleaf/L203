@@ -138,7 +138,7 @@ def update_mode(state, mode, phase, turn="None"): # mode is the higher level sta
                     return "LEFT_TURN", "turning_start"
             elif phase == "turning_end":
                 if state == (1,1,1,0):
-                    sleep(0.19)
+                    sleep(0.17)
                     return "LEFT_TURN", "exiting"
                 else:
                     return "LEFT_TURN", "turning_end"

@@ -13,21 +13,30 @@ from utime import sleep
 import motor_control_main as control
 import line_sensor_control as sensors
 import motor_control_functions as func
+from machine import Pin, ADC
+
 
 print("Welcome to main.py!")
 sleep(4)
-instructions = ["straight", "left", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight","straight","straight","straight", "left", "straight", "right"]
+#instructions = ["straight", "left", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight","straight","straight","straight", "left", "straight", "right"]
+instructions = ["straight", "left", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "left", "right", "straight", "straight", "straight", "straight", "straight","straight","straight","straight", "left", "straight", "right"]
 threshold_counter = [0,0,0] #t, l, r
 threshold = 3
 timeout_counter = 0
-timeout_threshold = 11
+timeout_threshold = 12
 timeout=False
 turn_delay=0
+
+green_led = Pin(10, Pin.OUT)
+red_led = Pin(12, Pin.OUT)  # Pin 27 = GP27 (labelled 33 on the jumper)
+yellow_led = Pin(11, Pin.OUT)  # Pin 26 = GP26 (labelled 32 on the jumper)
+blue_led = Pin(14, Pin.OUT)  # Pin 22 = GP22 (labelled 31 on the jumper)
 
 while True: # continuous loop that controls the entire functionality
     state = sensors.read_sensors()
     turn = "None"
     turn_delay=0
+
     if timeout == True:
         timeout_counter += 1
         if timeout_counter >= timeout_threshold:
@@ -73,6 +82,26 @@ while True: # continuous loop that controls the entire functionality
 
     control.mode, control.phase= control.update_mode(state, control.mode, control.phase, turn)
     control.update_actions(state, control.mode, control.phase)
+    if instructions[0] == "None":
+        green_led.value(1)
+        red_led.value(1)
+        yellow_led.value(1)
+        blue_led.value(1)
+    elif instructions[0] == "straight":
+        green_led.value(1)
+        red_led.value(0)
+        yellow_led.value(0)
+        blue_led.value(0)
+    elif instructions[0] == "left":
+        green_led.value(0)
+        red_led.value(1)
+        yellow_led.value(0)
+        blue_led.value(0)
+    elif instructions[0] == "right":
+        green_led.value(0)
+        red_led.value(0)
+        yellow_led.value(1)
+        blue_led.value(0)
     sleep(0.01) # to be adjusted after testing
     print(f"State: {state}, Mode: {control.mode}, Phase: {control.phase}, Next Instruction: {instructions[0] if instructions else 'None'}, Timeout: {timeout}", {len(instructions)}) # for testing/debugging - can be removed later
 

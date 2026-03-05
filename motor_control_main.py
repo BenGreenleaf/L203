@@ -45,22 +45,22 @@ def update_mode(state, mode, phase, turn="None"): # mode is the higher level sta
         
     elif mode == "LINE_FOLLOWING":
         if state == (0,0,0,1):
-            reverse_ticks = 7
+            reverse_ticks = 8
             return "RIGHT_TURN", "reversing" #changed turning to reversing
         elif state == (1,0,0,1) and turn == "right":
-            reverse_ticks = 7
+            reverse_ticks = 8
             return "RIGHT_TURN", "reversing"
         elif state == (1,0,0,1) and turn == "left":
-            reverse_ticks = 7
+            reverse_ticks = 8
             return "LEFT_TURN", "reversing"
         elif state == (1,1,1,0) and turn == "left":
-            reverse_ticks = 7
+            reverse_ticks = 8
             return "LEFT_TURN", "turning_start"
         elif state == (0,1,1,1) and turn == "right":
-            reverse_ticks = 7
+            reverse_ticks = 8
             return "RIGHT_TURN", "turning_start"
         elif state == (1,0,0,0):
-            reverse_ticks = 7 # added these for second mode. 
+            reverse_ticks = 8 # added these for second mode. 
             return "LEFT_TURN", "reversing"
         # elif state == (1,0,0,1):
         #     return "STOP", "turning"
@@ -150,7 +150,7 @@ def update_mode(state, mode, phase, turn="None"): # mode is the higher level sta
             elif phase == "turning_end":
                 if state == (1,1,1,0):
                     if optional_left_turn == True:
-                        sleep(0.25)
+                        sleep(0.29)
                         optional_left_turn = False
                     else:
                         sleep(0.19)
@@ -219,7 +219,7 @@ def update_mode(state, mode, phase, turn="None"): # mode is the higher level sta
 def update_actions(state, mode, phase):
     global error, last_error, last_seen, advance_counter, last_dir, align_ticks, centre_streak, reverse_ticks
 
-    turn_speed = 50 # test and adjust
+    turn_speed = 53 # test and adjust
     correction_speed = 40
 
 #variation 1 of the turning code - old
@@ -330,8 +330,6 @@ def update_actions(state, mode, phase):
         update_error(new_error)
         base = speed #adjust
         
-        if abs(error) < 0.1:
-            error = 0
 
         if error != 0:
             last_dir = error

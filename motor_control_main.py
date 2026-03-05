@@ -18,6 +18,8 @@ centre_streak = 0
 reverse_ticks = 0
 turning_mode = 2 #one for original two for the new one as of 3.3.26
 finding_counter = 0
+optional_left_turn = False
+optional_right_turn = False
 
 def update_error(new_error):
     global error, last_error
@@ -26,7 +28,7 @@ def update_error(new_error):
     
 
 def update_mode(state, mode, phase, turn="None"): # mode is the higher level state of the robot shown in capitals, state is the line sensor states, phase is the sub state of a mode to protect against changing states mid transition (shown in lower case)
-    global last_seen, advance_counter, reverse_ticks, turning_mode, finding_counter
+    global last_seen, advance_counter, reverse_ticks, turning_mode, finding_counter, optional_left_turn, optional_right_turn
         
     if mode == "INITIALISE":
         if phase == "find_line":
@@ -51,6 +53,12 @@ def update_mode(state, mode, phase, turn="None"): # mode is the higher level sta
         elif state == (1,0,0,1) and turn == "left":
             reverse_ticks = 7
             return "LEFT_TURN", "reversing"
+        elif state == (1,1,1,0) and turn == "left":
+            reverse_ticks = 7
+            return "LEFT_TURN", "turning_start"
+        elif state == (0,1,1,1) and turn == "right":
+            reverse_ticks = 7
+            return "RIGHT_TURN", "turning_start"
         elif state == (1,0,0,0):
             reverse_ticks = 7 # added these for second mode. 
             return "LEFT_TURN", "reversing"
@@ -85,7 +93,7 @@ def update_mode(state, mode, phase, turn="None"): # mode is the higher level sta
         
         elif turning_mode == 2:
             if phase == "reversing": 
-                if state in [(1,1,1,1), (0,1,1,1)]:
+                if state in [(1,1,1,1), (0,1,1,1), (0,0,1,1)]:
                     return "RIGHT_TURN", "turning_start"
                 else: 
                     return "RIGHT_TURN", "reversing"
@@ -96,7 +104,10 @@ def update_mode(state, mode, phase, turn="None"): # mode is the higher level sta
                     return "RIGHT_TURN", "turning_start"
             elif phase == "turning_end":
                 if state in [(0,1,1,1),(0,1,0,1)]:
-                    sleep(0.14)
+                    if optional_right_turn == True:
+                        sleep(0.20)
+                    else:
+                        sleep(0.14)
                     return "RIGHT_TURN", "exiting"
                 else:
                     return "RIGHT_TURN", "turning_end"
@@ -127,7 +138,7 @@ def update_mode(state, mode, phase, turn="None"): # mode is the higher level sta
                 
         elif turning_mode == 2:
             if phase == "reversing": 
-                if state in  [(1,1,1,0), (1,1,0,0)]:
+                if state in  [(1,1,1,0), (1,1,0,0), (1,1,1,1)]:
                     return "LEFT_TURN", "turning_start"
                 else: 
                     return "LEFT_TURN", "reversing"
@@ -138,7 +149,11 @@ def update_mode(state, mode, phase, turn="None"): # mode is the higher level sta
                     return "LEFT_TURN", "turning_start"
             elif phase == "turning_end":
                 if state == (1,1,1,0):
-                    sleep(0.19)
+                    if optional_left_turn == True:
+                        sleep(0.25)
+                        optional_left_turn = False
+                    else:
+                        sleep(0.19)
                     return "LEFT_TURN", "exiting"
                 else:
                     return "LEFT_TURN", "turning_end"

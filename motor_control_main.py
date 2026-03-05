@@ -219,7 +219,7 @@ def update_mode(state, mode, phase, turn="None"): # mode is the higher level sta
 def update_actions(state, mode, phase):
     global error, last_error, last_seen, advance_counter, last_dir, align_ticks, centre_streak, reverse_ticks
 
-    turn_speed = 60 # test and adjust
+    turn_speed = 50 # test and adjust
     correction_speed = 40
 
 #variation 1 of the turning code - old

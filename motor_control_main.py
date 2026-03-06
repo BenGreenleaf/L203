@@ -21,6 +21,7 @@ finding_counter = 0
 optional_left_turn = False
 optional_right_turn = False
 state_180= 0
+drop_off_ready = False
 
 def update_error(new_error):
     global error, last_error
@@ -29,7 +30,7 @@ def update_error(new_error):
     
 
 def update_mode(state, mode, phase, turn="None"): # mode is the higher level state of the robot shown in capitals, state is the line sensor states, phase is the sub state of a mode to protect against changing states mid transition (shown in lower case)
-    global last_seen, advance_counter, reverse_ticks, turning_mode, finding_counter, optional_left_turn, optional_right_turn, state_180
+    global last_seen, advance_counter, reverse_ticks, turning_mode, finding_counter, optional_left_turn, optional_right_turn, state_180, drop_off_ready
         
     if mode == "INITIALISE":
         if phase == "find_line":
@@ -67,11 +68,10 @@ def update_mode(state, mode, phase, turn="None"): # mode is the higher level sta
         #     return "STOP", "turning"
         elif state == (0,0,0,0):
             return "INITIALISE", "find_line"
-        elif state == (1,1,1,1):
+        elif state == (1,1,1,1) and drop_off_ready == True:
             state_180 = 0
+            drop_off_ready = False
             return "180_TURN", "reversing"
-        # elif state == (1,1,1,1):
-        #     return "BLOCK_DEPOSIT", None
         else:
             return "LINE_FOLLOWING", None
 
@@ -92,13 +92,13 @@ def update_mode(state, mode, phase, turn="None"): # mode is the higher level sta
             else:
                 return "180_TURN", "turning_start"
         elif phase == "turning_end":
-            if state[1] == 1 and state[2] == 1:
+            if state[2] == 1 or state[1] == 1:
                 sleep(0.05)
                 return "180_TURN", "exiting"
             else:
                 return "180_TURN", "turning_end"
         elif phase == "exiting":
-            if state[1] == 1 and state[2] == 1:
+            if state[2] == 1:
                 return "LINE_FOLLOWING", None
             else:
                 return "180_TURN", "exiting"
@@ -250,7 +250,6 @@ def update_mode(state, mode, phase, turn="None"): # mode is the higher level sta
 
 def update_actions(state, mode, phase):
     global error, last_error, last_seen, advance_counter, last_dir, align_ticks, centre_streak, reverse_ticks
-
     turn_speed = 53 # test and adjust
     correction_speed = 40
 
@@ -376,15 +375,17 @@ def update_actions(state, mode, phase):
         
 
         if error != 0:
+           
             last_dir = error
             # align_ticks = 0 
             centre_streak = 0
 
-            kp = 15
-            kd = 10
+            kp = 20
+            kd = 5
             correction = kp * error + kd * (error - last_error)
             motor.set_left(int(base - correction))
             motor.set_right(int(base + correction))
+
 
         else:
             centre_streak += 1

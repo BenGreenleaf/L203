@@ -90,6 +90,16 @@ def convert_path_to_actions(graph, path, current_orientation):
         current_orientation = direction
     return actions
 
+def plan_route(start, goal, current_orientation):
+    path_nodes, total_dist = dijkstra_shortest_path(graph, start, goal)
+
+    if path_nodes is None:
+        return None, None, None
+
+    actions = convert_path_to_actions(graph, path_nodes, current_orientation)
+    return path_nodes, actions, total_dist
+
+
 if __name__ == "__main__":
     path, total_dist = dijkstra_shortest_path(graph, 1, 16)
     print("Shortest path:", path)

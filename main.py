@@ -12,7 +12,9 @@ from test_tiny_code_reader import test_tiny_code_reader
 from utime import sleep
 import motor_control_main as control
 import line_sensor_control as sensors
-import motor_control_functions as func
+import route_executor as route
+import task_control as task
+import path_finding as path
 import network
 import socket
 import time
@@ -27,96 +29,76 @@ print("Welcome to main.py!")
 
 sleep(4)
 #instructions = ["straight", "left", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight","straight","straight","straight", "left", "straight", "right"]
-instructions = ["right", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight_drop_off", "left", "straight", "left", "straight", "straight", "straight", "straight","straight","straight","straight", "left", "straight", "right"]
-threshold_counter = [0,0,0] #t, l, r
-threshold = 3
-timeout_counter = 0
-timeout_threshold = 12
-timeout=False
-turn_delay=0
+# instructions = ["right", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight_drop_off", "left", "straight", "left", "straight", "straight", "straight", "straight","straight","straight","straight", "left", "straight", "right"]
+instructions = []
+current_node = 1
+current_orientation = "north"
+route_loaded = False
+goal = None
+path_nodes = None
+total_dist = None
+
 
 while True: # continuous loop that controls the entire functionality
     state = sensors.read_sensors()
-    turn = "None"
-    turn_delay=0
+    step = task.get_current_step()
+    step_type = step["type"]
+    if step_type == "NAVIGATE":
+        if not route_loaded:
+            goal = task.get_current_goal()
+            path_nodes, instructions, total_dist = path.plan_route(current_node, goal, current_orientation)
+            route_loaded = True
 
-    if timeout == True:
-        timeout_counter += 1
-        if timeout_counter >= timeout_threshold:
-            timeout = False
-            timeout_counter = 0
-    elif state  == (1,0,0,1) and control.mode == "LINE_FOLLOWING": # if the robot is on the line and in line following mode, follow the line
-        threshold_counter = [threshold_counter[0]+1, 0, 0]
-        #T-Junction
-        if threshold_counter[0] >= threshold:
-            threshold_counter = [0, 0, 0]
-            if instructions[0] == "right":
-                turn = "right"
-                instructions.pop(0)
-            elif instructions[0] == "left":
-                turn = "left"
-                instructions.pop(0)
-            timeout = True
-    elif state in [(1, 1, 1, 0), (1,1,0,0)] and control.mode == "LINE_FOLLOWING": # if the robot is at a junction and in line following mode, follow the instructions
-        #optional left turn
-        threshold_counter = [0, threshold_counter[1]+1, 0]
-        if threshold_counter[1] >= threshold:
-            threshold_counter = [0, 0, 0]
-            if instructions[0] == "left":
-                turn = "left"
-                instructions.pop(0)
-                control.optional_left_turn=True
-            elif instructions[0] == "straight":
-                instructions.pop(0)
-            timeout=True
-    elif state == (0, 1, 1, 1) and control.mode == "LINE_FOLLOWING": # if the robot is at a junction and in line following mode, follow the instructions
-        #optional right turn
-        threshold_counter = [0, 0, threshold_counter[2]+1]
-        if threshold_counter[2] >= threshold:
-            threshold_counter = [0, 0, 0]
-            if instructions[0] == "right":
-                turn = "right"
-                instructions.pop(0)
-                control.optional_right_turn=True
-            elif instructions[0] == "straight":
-                instructions.pop(0)
-            timeout=True
-    elif state == (1,1,1,1) and control.mode == "LINE_FOLLOWING" and instructions[0] == "straight_drop_off": # if the robot is at a junction and in line following mode, follow the instructions
-        turn = "None"
-        instructions.pop(0)
-        control.drop_off_ready = True
+        turn = route.turn_decisions(instructions, state)
+        control.mode, control.phase= control.update_mode(state, control.mode, control.phase, turn)
+        control.update_actions(state, control.mode, control.phase)
 
-    control.mode, control.phase= control.update_mode(state, control.mode, control.phase, turn)
-    control.update_actions(state, control.mode, control.phase)
-    if instructions[0] == "None":
-        green_led.value(1)
-        red_led.value(1)
-        yellow_led.value(1)
-        blue_led.value(1)
-    elif instructions[0] == "straight":
-        green_led.value(1)
-        red_led.value(0)
-        yellow_led.value(0)
-        blue_led.value(0)
-    elif instructions[0] == "left":
-        green_led.value(0)
-        red_led.value(1)
-        yellow_led.value(0)
-        blue_led.value(0)
-    elif instructions[0] == "right":
-        green_led.value(0)
-        red_led.value(0)
-        yellow_led.value(1)
-        blue_led.value(0)
-    sleep(0.01) # to be adjusted after testing
-    print((
-    f"State: {state}, "
-    f"Mode: {control.mode}, "
-    f"Phase: {control.phase}, "
-    f"Next Instruction: {instructions[0] if instructions else 'None'}, "
-    f"Timeout: {timeout}, "
-    f"Remaining: {len(instructions)}"
-))
+        if not instructions and control.mode == "LINE_FOLLOWING": #check this condition
+            if path_nodes is not None and len(path_nodes) >= 2:
+                current_node = goal
+                u = path_nodes[-2]
+                v = path_nodes[-1]
+                _dist, current_orientation = path.graph[u][v]
+                task.advance_stage()
+                route_loaded = False
+        
+    elif step_type == "SCAN":
+        ...
+
+    elif step_type == "DEPOSIT":
+        ...
+
+
+
+#     if instructions[0] == "None":
+#         green_led.value(1)
+#         red_led.value(1)
+#         yellow_led.value(1)
+#         blue_led.value(1)
+#     elif instructions[0] == "straight":
+#         green_led.value(1)
+#         red_led.value(0)
+#         yellow_led.value(0)
+#         blue_led.value(0)
+#     elif instructions[0] == "left":
+#         green_led.value(0)
+#         red_led.value(1)
+#         yellow_led.value(0)
+#         blue_led.value(0)
+#     elif instructions[0] == "right":
+#         green_led.value(0)
+#         red_led.value(0)
+#         yellow_led.value(1)
+#         blue_led.value(0)
+#     sleep(0.01) # to be adjusted after testing
+# #     # print((
+# #     # f"State: {state}, "
+# #     # f"Mode: {control.mode}, "
+# #     # f"Phase: {control.phase}, "
+# #     # f"Next Instruction: {instructions[0] if instructions else 'None'}, "
+# #     # f"Timeout: {timeout}, "
+# #     # f"Remaining: {len(instructions)}"
+# # ))
 
 
 # Uncomment the test to run

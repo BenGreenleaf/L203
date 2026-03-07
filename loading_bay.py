@@ -1,31 +1,36 @@
 from machine import I2C, Pin
-from sensor_ToF import VL53L0X
+from sensor_ToF import DistanceSensor
 import line_sensor_control as sensors
 
-i2c = I2C(1, scl=Pin(15), sda=Pin(14), freq=400000)
+tof = DistanceSensor()
 
-tof = VL53L0X(i2c)
+mode = "block_finding"
+phase = None
 
 timer = 0
 wall_counter = 0
 saved_timer = 0
+distance = tof.read_distance()
+last_distance = distance
+d = 0
 
 #might need a threshold for detecting d being a certain value for a certain time
 
-x = 0 #threshold? may be better to determine state based on jumps between a further and closer distance
-xt = 0 #another threshold that needs tuning
+x = 150 #threshold? may be better to determine state based on jumps between a further and closer distance
+xt = 20 #another threshold that needs tuning
 
 def update_distance(new_distance):
     global distance, last_distance, d
     last_distance = distance
     distance = new_distance
     d = distance - last_distance
+    return d
     
 
 def update_mode(state, mode, phase):
     global d, timer, saved_timer, wall_counter
 
-    if mode == "block_finding" and phase == None:
+    if mode == "block_finding":
 
         if d >= x:
             timer = 0
@@ -36,10 +41,10 @@ def update_mode(state, mode, phase):
             wall_counter += 1
             return "block_finding", None
         elif phase == "obstruction" and timer > xt:
-            mode = "block found"
+             return "block_found", None
         elif phase == "obstruction" and timer <= xt:
             timer += 1
-            return "block finding", "obstruction"
+            return "block_finding", "obstruction"
     
     if mode == "block_found" and phase == None:
         if state == (0,1,1,0) and phase == None:
@@ -48,7 +53,8 @@ def update_mode(state, mode, phase):
             return "block_found", "turning"
         if state == (1,1,1,1) and phase == "turning":
             return "block_found", "approach"
-
+        
+    return mode, phase
     
 
 
@@ -58,7 +64,11 @@ def update_mode(state, mode, phase):
 
 while True:
     state = sensors.read_sensors()
-    distance = tof.read_mm()
+    new_distance = tof.read_distance()
+    d = update_distance(new_distance)
+    mode, phase = update_mode(state, mode, phase)
+    print(f"distance: {distance}, d: {d}, mode: {mode}, phase: {phase}")
+    
 
 
 

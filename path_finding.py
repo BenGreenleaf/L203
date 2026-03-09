@@ -19,7 +19,7 @@ graph_list = {1: [(2, 10, "north")],
            13: [(12, 10, "south"), (14, 40.8, "north")],
            14: [(13, 40.8, "south"), (15, 105, "west")],
            15: [(14, 105, "east"), (16, 139, "south"), (33, 107, "west")],
-           
+           16: [(15, 139, "north"), (17, 44, "east"), (25, 47, "west")],
            33: [(15, 107, "east"), (40, 41.7, "south")],
            40: [(33, 41.7, "north"), (34, 9.6, "south")],
            34: [(40, 9.6, "north"), (35, 9, "south")],
@@ -91,6 +91,7 @@ def convert_path_to_actions(graph, path, current_orientation):
     return actions
 
 def plan_route(start, goal, current_orientation):
+    print(graph, start, goal)
     path_nodes, total_dist = dijkstra_shortest_path(graph, start, goal)
 
     if path_nodes is None:

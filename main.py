@@ -19,6 +19,7 @@ import network
 import socket
 import time
 from machine import Pin
+import resistance_identifier as res
 
 green_led = Pin(10, Pin.OUT)
 red_led = Pin(12, Pin.OUT)
@@ -31,42 +32,67 @@ sleep(4)
 #instructions = ["straight", "left", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight","straight","straight","straight", "left", "straight", "right"]
 # instructions = ["right", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight_drop_off", "left", "straight", "left", "straight", "straight", "straight", "straight","straight","straight","straight", "left", "straight", "right"]
 instructions = []
-current_node = 1
-current_orientation = "north"
+current_node = 3
+current_orientation = "east"
 route_loaded = False
 goal = None
 path_nodes = None
 total_dist = None
+colour = None
 
 
 while True: # continuous loop that controls the entire functionality
     state = sensors.read_sensors()
     step = task.get_current_step()
     step_type = step["type"]
+    print(step)
     if step_type == "NAVIGATE":
         if not route_loaded:
+            print("loading route")
             goal = task.get_current_goal()
+            print(goal)
             path_nodes, instructions, total_dist = path.plan_route(current_node, goal, current_orientation)
+            print(instructions)
             route_loaded = True
 
         turn = route.turn_decisions(instructions, state)
         control.mode, control.phase= control.update_mode(state, control.mode, control.phase, turn)
         control.update_actions(state, control.mode, control.phase)
+        print(control.mode, control.phase)
 
         if not instructions and control.mode == "LINE_FOLLOWING": #check this condition
+            print("goal reached")
             if path_nodes is not None and len(path_nodes) >= 2:
                 current_node = goal
                 u = path_nodes[-2]
                 v = path_nodes[-1]
                 _dist, current_orientation = path.graph[u][v]
+                print("advancing step")
                 task.advance_stage()
                 route_loaded = False
         
     elif step_type == "SCAN":
-        ...
+        ... #insert loading bay script
+        colour = res.identify()
+        if colour == "RED":
+            task.set_next_deposit_goal(6)
+        elif colour == "BLUE":
+            task.set_next_deposit_goal(44)
+        elif colour == "GREEN":
+            task.set_next_deposit_goal(43)
+        elif colour == "YELLOW":
+            task.set_next_deposit_goal(4)
+        task.advance_stage()
+        route_loaded = False
+
 
     elif step_type == "DEPOSIT":
         ...
+        colour = None
+        task.advance_stage()
+        route_loaded = False
+
+    sleep(0.01)
 
 
 

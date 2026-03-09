@@ -6,6 +6,7 @@ action = "collect_1"
 
 sequence = [
     {"name": "go_collect_1", "type": "NAVIGATE", "goal": 7}, #potentially slightly excessive but i want the names of the states for debugging if necessary
+    {"name": "go_collect_test", "type": "NAVIGATE", "goal": 25}, #for testing only
     {"name": "scan_1",      "type": "SCAN"},
     {"name": "go_deposit_1","type": "NAVIGATE", "goal": None},
     {"name": "deposit_1",   "type": "DEPOSIT"},
@@ -39,6 +40,13 @@ def get_current_goal():
         return current["goal"]
     return None 
 
+
+def set_next_deposit_goal(goal):
+    for i in range(stage + 1, len(sequence)):
+        step = sequence[i]
+        if step["type"] == "NAVIGATE" and step["name"].startswith("go_deposit"):
+            step["goal"] = goal
+            break
 
 
 

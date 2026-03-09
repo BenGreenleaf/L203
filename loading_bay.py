@@ -13,29 +13,38 @@ saved_timer = 0
 distance = tof.read_distance()
 last_distance = distance
 d = 0
+d_window = []
+window_size = 7
+plus_threshold = 100
+minus_threshold = -100 #need to tune these
 
-#might need a threshold for detecting d being a certain value for a certain time
+
 
 x = 150 #threshold? may be better to determine state based on jumps between a further and closer distance
 xt = 20 #another threshold that needs tuning
 
 def update_distance(new_distance):
-    global distance, last_distance, d
+    global distance, last_distance, d, d_window
     last_distance = distance
     distance = new_distance
     d = distance - last_distance
-    return d
+    d_window.append(d)
+    if len(d_window) > window_size:
+        d_window.pop(0)
+    d_sum = sum(d_window)
+
+    return d_sum
     
 
-def update_mode(state, mode, phase):
+def update_mode(state, mode, phase, d_sum):
     global d, timer, saved_timer, wall_counter
 
     if mode == "block_finding":
 
-        if d >= x:
+        if d_sum >= plus_threshold:
             timer = 0
             return "block_finding", "obstruction"
-        elif d <= -x:
+        elif d_sum <= minus_threshold:
             return "block_finding", "obstruction_end"
         elif phase == "obstruction_end" and timer <= xt:
             wall_counter += 1
@@ -65,8 +74,8 @@ def update_mode(state, mode, phase):
 while True:
     state = sensors.read_sensors()
     new_distance = tof.read_distance()
-    d = update_distance(new_distance)
-    mode, phase = update_mode(state, mode, phase)
+    d_sum = update_distance(new_distance)
+    mode, phase = update_mode(state, mode, phase, d_sum)
     print(f"distance: {distance}, d: {d}, mode: {mode}, phase: {phase}")
     
 

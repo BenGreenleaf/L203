@@ -24,10 +24,10 @@ def _duty_from_pct(pct):
 def set_left(speed):  # speed input needs to be from - 100 to 100
     if speed >= 0:
         l_dir.value(0)
-        l_pwm.duty_u16(_duty_from_pct(0.95*speed))
+        l_pwm.duty_u16(_duty_from_pct(0.93*speed))
     else:
         l_dir.value(1)
-        l_pwm.duty_u16(_duty_from_pct(-0.95*speed))
+        l_pwm.duty_u16(_duty_from_pct(-0.93*speed))
 
 
 def set_right(speed):

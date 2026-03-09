@@ -24,8 +24,6 @@ import resistance_identifier as res
 green_led = Pin(10, Pin.OUT)
 red_led = Pin(12, Pin.OUT)
 yellow_led = Pin(11, Pin.OUT)
-blue_led = Pin(14, Pin.OUT)
-
 print("Welcome to main.py!")
 
 sleep(4)
@@ -45,7 +43,7 @@ while True: # continuous loop that controls the entire functionality
     state = sensors.read_sensors()
     step = task.get_current_step()
     step_type = step["type"]
-    print(step)
+    #print(step)
     if step_type == "NAVIGATE":
         if not route_loaded:
             print("loading route")
@@ -54,6 +52,19 @@ while True: # continuous loop that controls the entire functionality
             path_nodes, instructions, total_dist = path.plan_route(current_node, goal, current_orientation)
             print(instructions)
             route_loaded = True
+        
+        if instructions and instructions[0] == "straight":
+            green_led.value(1)
+            red_led.value(0)
+            yellow_led.value(0)
+        elif instructions and instructions[0] == "left":
+            green_led.value(0)
+            red_led.value(1)
+            yellow_led.value(0)
+        elif instructions and instructions[0] == "right":
+            green_led.value(0)
+            red_led.value(0)
+            yellow_led.value(1)
 
         turn = route.turn_decisions(instructions, state)
         control.mode, control.phase= control.update_mode(state, control.mode, control.phase, turn)

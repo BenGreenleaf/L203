@@ -113,11 +113,11 @@ def plan_route(start, goal, current_orientation):
         return None, None, None
 
     actions = convert_path_to_actions(graph, path_nodes, current_orientation)
-    return path_nodes, actions, total_dist
+    return path_nodes, actions[1:], total_dist
 
 
 if __name__ == "__main__":
     path, total_dist = dijkstra_shortest_path(graph, 1, 16)
     print("Shortest path:", path)
     print("Total distance:", total_dist)
-    print("Directions:", convert_path_to_actions(graph, path, "north")[1:])
+    print("Directions:", convert_path_to_actions(graph, path, "north"))

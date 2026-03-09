@@ -1,25 +1,41 @@
 import motor_control_main as control
 import line_sensor_control as sensors
+from machine import Pin
+
 
 threshold_counter = [0,0,0] #t, l, r
-threshold = 3
+threshold = 4
 timeout_counter = 0
-timeout_threshold = 12
+timeout_threshold = 6
+over_line = False
 timeout=False
 turn_delay=0
 
+blue_led = Pin(14, Pin.OUT)
+
+
 
 def turn_decisions(instructions, state):
-    global threshold_counter, timeout_counter, timeout
+    global threshold_counter, timeout_counter, timeout, over_line
     turn = "None"
     turn_delay=0
-    
+    print("State:", state, "Timeout:", timeout, "Over line:", over_line, "Threshold counter:", threshold_counter)
     if timeout == True:
+        blue_led.value(0)
         timeout_counter += 1
         if timeout_counter >= timeout_threshold:
             timeout = False
             timeout_counter = 0
+    elif over_line == True:
+        blue_led.value(1)
+        if state[0] == 0 and state[3] == 0:
+            #No longer over a line
+            over_line = False
+            timeout = True
+        else:
+            pass
     elif state  == (1,0,0,1) and control.mode == "LINE_FOLLOWING": # if the robot is on the line and in line following mode, follow the line
+        blue_led.value(0)
         threshold_counter = [threshold_counter[0]+1, 0, 0]
         #T-Junction
         if threshold_counter[0] >= threshold:
@@ -30,9 +46,10 @@ def turn_decisions(instructions, state):
             elif instructions[0] == "left":
                 turn = "left"
                 instructions.pop(0)
-            timeout = True
-    elif state in [(1, 1, 1, 0), (1,1,0,0)] and control.mode == "LINE_FOLLOWING": # if the robot is at a junction and in line following mode, follow the instructions
+            over_line = True
+    elif state[0] == 1 and state[3] == 0 and control.mode == "LINE_FOLLOWING": # if the robot is at a junction and in line following mode, follow the instructions
         #optional left turn
+        blue_led.value(0)
         threshold_counter = [0, threshold_counter[1]+1, 0]
         if threshold_counter[1] >= threshold:
             threshold_counter = [0, 0, 0]
@@ -42,9 +59,10 @@ def turn_decisions(instructions, state):
                 control.optional_left_turn=True
             elif instructions[0] == "straight":
                 instructions.pop(0)
-            timeout=True
-    elif state == (0, 1, 1, 1) and control.mode == "LINE_FOLLOWING": # if the robot is at a junction and in line following mode, follow the instructions
+            over_line=True
+    elif state[0] == 0 and state[3] == 1 and control.mode == "LINE_FOLLOWING": # if the robot is at a junction and in line following mode, follow the instructions
         #optional right turn
+        blue_led.value(0)
         threshold_counter = [0, 0, threshold_counter[2]+1]
         if threshold_counter[2] >= threshold:
             threshold_counter = [0, 0, 0]
@@ -54,8 +72,9 @@ def turn_decisions(instructions, state):
                 control.optional_right_turn=True
             elif instructions[0] == "straight":
                 instructions.pop(0)
-            timeout=True
-    elif state == (1,1,1,1) and control.mode == "LINE_FOLLOWING" and instructions[0] == "straight_drop_off": # if the robot is at a junction and in line following mode, follow the instructions (why 1111?)
+            over_line=True
+    elif state[0] == 1 and state[1] == 1 and state[2] == 1 and state[3] == 1 and control.mode == "LINE_FOLLOWING" and instructions[0] == "straight_drop_off": # if the robot is at a junction and in line following mode, follow the instructions (why 1111?)
+        blue_led.value(0)
         turn = "None"
         instructions.pop(0)
         control.drop_off_ready = True

@@ -25,16 +25,13 @@ import resistance_identifier as res
 
 green_led = Pin(10, Pin.OUT)
 red_led = Pin(12, Pin.OUT)
-yellow_led = Pin(11, Pin.OUT)
 blue_led = Pin(14, Pin.OUT)
-
 print("Welcome to main.py!")
 
-sleep(4)
 #instructions = ["straight", "left", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight","straight","straight","straight", "left", "straight", "right"]
 # instructions = ["right", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight_drop_off", "left", "straight", "left", "straight", "straight", "straight", "straight","straight","straight","straight", "left", "straight", "right"]
 instructions = []
-current_node = 3
+current_node = 2
 current_orientation = "east"
 route_loaded = False
 goal = None
@@ -43,26 +40,43 @@ total_dist = None
 colour = None
 scan_started = False
 scan_done = False
-
+start = True
+sleep(2)
 
 while True: # continuous loop that controls the entire functionality
     state = sensors.read_sensors()
     step = task.get_current_step()
     step_type = step["type"]
-    print(step)
+    #print(step)
     if step_type == "NAVIGATE":
         if not route_loaded:
             print("loading route")
             goal = task.get_current_goal()
             print(goal)
             path_nodes, instructions, total_dist = path.plan_route(current_node, goal, current_orientation)
+            if start == True and instructions:
+                instructions = instructions[1:] # skip the first instruction as the robot is already facing the correct direction for the first move
+                start = False
             print(instructions)
             route_loaded = True
+        
+        if instructions and instructions[0] == "straight":
+            green_led.value(1)
+            red_led.value(0)
+            blue_led.value(0)
+        elif instructions and instructions[0] == "left":
+            green_led.value(0)
+            red_led.value(1)
+            blue_led.value(0)
+        elif instructions and instructions[0] == "right":
+            green_led.value(0)
+            red_led.value(0)
+            blue_led.value(1)
 
         turn = route.turn_decisions(instructions, state)
         control.mode, control.phase= control.update_mode(state, control.mode, control.phase, turn)
         control.update_actions(state, control.mode, control.phase)
-        print(control.mode, control.phase)
+        print(control.mode, control.phase, turn)
 
         if not instructions and control.mode == "LINE_FOLLOWING": #check this condition
             print("goal reached")

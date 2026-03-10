@@ -29,7 +29,7 @@ def update_error(new_error):
     error = new_error
     
 
-def update_mode(state, mode, phase, turn="None"): # mode is the higher level state of the robot shown in capitals, state is the line sensor states, phase is the sub state of a mode to protect against changing states mid transition (shown in lower case)
+def update_mode(state, mode, phase, turn): # mode is the higher level state of the robot shown in capitals, state is the line sensor states, phase is the sub state of a mode to protect against changing states mid transition (shown in lower case)
     global last_seen, advance_counter, reverse_ticks, turning_mode, finding_counter, optional_left_turn, optional_right_turn, state_180, drop_off_ready
         
     if mode == "INITIALISE":
@@ -46,32 +46,32 @@ def update_mode(state, mode, phase, turn="None"): # mode is the higher level sta
                 return "RIGHT_TURN","reversing"
         
     elif mode == "LINE_FOLLOWING":
-        if state == (0,0,0,1):
+        if state == (0,0,0,1) and turn == "None":
             reverse_ticks = 8
             return "RIGHT_TURN", "reversing" #changed turning to reversing
-        elif state == (1,0,0,1) and turn == "right":
-            reverse_ticks = 8
-            return "RIGHT_TURN", "reversing"
-        elif state == (1,0,0,1) and turn == "left":
-            reverse_ticks = 8
-            return "LEFT_TURN", "reversing"
-        elif state == (1,1,1,0) and turn == "left":
-            reverse_ticks = 8
-            return "LEFT_TURN", "turning_start"
-        elif state == (0,1,1,1) and turn == "right":
-            reverse_ticks = 8
-            return "RIGHT_TURN", "turning_start"
-        elif state == (1,0,0,0):
+        elif state == (1,0,0,0) and turn == "None":
             reverse_ticks = 8 # added these for second mode. 
             return "LEFT_TURN", "reversing"
-        # elif state == (1,0,0,1):
-        #     return "STOP", "turning"
         elif state == (0,0,0,0):
             return "INITIALISE", "find_line"
-        elif state == (1,1,1,1) and drop_off_ready == True:
+        elif state == (1,1,1,1) and drop_off_ready == True and turn == "None":
             state_180 = 0
             drop_off_ready = False
             return "180_TURN", "reversing"
+        elif state[0] == 1 and state[3] == 1 and turn == "right":
+            reverse_ticks = 8
+            return "RIGHT_TURN", "reversing"
+        elif state[0] == 1 and state[3] == 1 and turn == "left":
+            reverse_ticks = 8
+            return "LEFT_TURN", "reversing"
+        elif state[0] == 1 and state[3] == 0 and turn == "left":
+            reverse_ticks = 8
+            return "LEFT_TURN", "turning_start"
+        elif state[0] == 0 and state[3] == 1 and turn == "right":
+            reverse_ticks = 8
+            return "RIGHT_TURN", "turning_start"
+        # elif state == (1,0,0,1):
+        #     return "STOP", "turning"
         else:
             return "LINE_FOLLOWING", None
 
@@ -182,10 +182,10 @@ def update_mode(state, mode, phase, turn="None"): # mode is the higher level sta
             elif phase == "turning_end":
                 if state == (1,1,1,0):
                     if optional_left_turn == True:
-                        sleep(0.35)
+                        sleep(0.45)
                         optional_left_turn = False
                     else:
-                        sleep(0.19)
+                        sleep(0.22)
                     return "LEFT_TURN", "exiting"
                 else:
                     return "LEFT_TURN", "turning_end"
@@ -293,8 +293,12 @@ def update_actions(state, mode, phase):
                 motor.set_left(int(-0.7*speed))
                 motor.set_right(int(-0.7*speed))
             elif phase == "turning_start":
-                motor.set_left(turn_speed)
-                motor.set_right(-turn_speed)
+                if optional_right_turn == True:
+                    motor.set_left(turn_speed)
+                    motor.set_right(-1.2*turn_speed)
+                else:
+                    motor.set_left(turn_speed)
+                    motor.set_right(-turn_speed)
             elif phase == "turning_end":
                 motor.set_left(turn_speed)
                 motor.set_right(-turn_speed) #could even adjust the speed of these values if the curve is too large or too small
@@ -322,10 +326,15 @@ def update_actions(state, mode, phase):
                 motor.set_left(int(-0.7*speed))
                 motor.set_right(int(-0.7*speed))
             if phase == "turning_start":
-                motor.set_left(-turn_speed)
-                motor.set_right(turn_speed)
+                if optional_left_turn == True:
+                    motor.set_left(-1.2*turn_speed)
+                    motor.set_right(turn_speed)
+                else:
+                    motor.set_left(-1.05*turn_speed)
+                    motor.set_right(turn_speed)
+
             if phase == "turning_end": #phases look identical but need to separate them as states are contained within each that need to be interpreted differenty
-                motor.set_left(-turn_speed)
+                motor.set_left(-1.05*turn_speed)
                 motor.set_right(turn_speed)
             if phase == "exiting":
                 motor.set_left(speed)

@@ -5,14 +5,14 @@ from utime import sleep
 MIN_ANGLE = 10
 MAX_ANGLE = 170
 step = 2
-move_delay = 0.02
-lift_angle = 90
-grab_angle = 90
+move_delay = 1
+lift_angle = 80
+grab_angle = 30
 
-lift = PWM(Pin(15))
+lift = PWM(Pin(13))
 lift.freq(50)
 
-grab = PWM(Pin(13))
+grab = PWM(Pin(15))
 grab.freq(50)
 
 def angle_to_u16(angle):
@@ -23,6 +23,9 @@ def angle_to_u16(angle):
     period_us = 20000  # 20ms = 50Hz
     return int(pulse_us * 65535 / period_us)
 
+def print_servo_angles():
+    print("Lift angle:", lift_angle)
+    print("Grab angle:", grab_angle)
 
 def move_servo(servo, current_angle, target_angle):
     if target_angle < current_angle:
@@ -39,17 +42,17 @@ def move_servo(servo, current_angle, target_angle):
 
 def lift_up():
     global lift_angle
-    lift_angle = move_servo(lift, lift_angle, 140)
+    lift_angle = move_servo(lift, lift_angle, 70) #140
     return True
 
 def lift_down():
     global lift_angle
-    lift_angle = move_servo(lift, lift_angle, 90)
+    lift_angle = move_servo(lift, lift_angle, 80)
     return True
 
 def grab_open():
     global grab_angle
-    grab_angle = move_servo(grab, grab_angle, 120)
+    grab_angle = move_servo(grab, grab_angle, 43)#120
     return True
 
 def grab_close():
@@ -57,6 +60,10 @@ def grab_close():
     grab_angle = move_servo(grab, grab_angle, 90)
     return True
 
+if __name__ == "__main__":
+    print("Testing grabber control...")
+    print_servo_angles()
+    sleep(1)
 
-
-
+grab_open()
+#lift_up()

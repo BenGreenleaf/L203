@@ -4,7 +4,7 @@ from machine import Pin
 
 
 threshold_counter = [0,0,0] #t, l, r
-threshold = 6
+threshold = 4
 timeout_counter = 0
 timeout_threshold = 15
 over_line = False

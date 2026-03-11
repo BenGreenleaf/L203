@@ -6,7 +6,10 @@ action = "collect_1"
 
 sequence = [
     {"name": "go_collect_1", "type": "NAVIGATE", "goal": 7}, #potentially slightly excessive but i want the names of the states for debugging if necessary
-    {"name": "go_collect_test", "type": "NAVIGATE", "goal": 25}, #for testing only
+    {"name": "go_collect_test", "type": "NAVIGATE", "goal": 33}, #for testing only
+    {"name": "go_deposit_TEST","type": "NAVIGATE", "goal": 6},
+    {"name": "deposit_TEST",   "type": "DEPOSIT"},
+    {"name": "go_collect_test2", "type": "NAVIGATE", "goal": 14},
     {"name": "scan_1",      "type": "SCAN"},
     {"name": "go_deposit_1","type": "NAVIGATE", "goal": None},
     {"name": "deposit_1",   "type": "DEPOSIT"},

@@ -5,8 +5,8 @@ from utime import sleep
 import motor_control_functions as motor
 import grabber_control as grabber
 
-frontsensor = DistanceSensor(111)
-leftsensor = DistanceSensor(110)
+frontsensor = DistanceSensor(0, 8, 9, )
+leftsensor = DistanceSensor(0, 2, 3)
 rightsensor = DistanceSensor(100) #need to find ids for each of these sensors
 
 mode = "block_finding"
@@ -199,7 +199,7 @@ def collection_actions(mode, phase, state):
 
 
 def collection_mode(state, mode, phase, distance):
-    global front_timer, reverse_timer, block_collected, block
+    global front_timer, reverse_timer, block_collected, block_lifted
     if mode == "block_found" and phase == "approach":
         front_timer = 0
         block_collected = False

@@ -376,6 +376,7 @@ def update_actions(state, mode, phase):
         else:
             new_error = error
 
+        print(new_error)
         alpha = 0.7
         new_error = alpha*new_error + (1-alpha)*new_error
 

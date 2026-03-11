@@ -11,7 +11,8 @@ last_dir = 0
 align_ticks = 0
 correction_speed = 40
 turn_start_ms = None
-turn_duration = 1200
+turn_duration = 1780
+
 
 
 def deposit_block_mode(mode, state):
@@ -60,9 +61,10 @@ def deposit_block_actions(mode, state):
 
 
 def reset_deposit_state():
-    global mode, block_released
+    global mode, block_released, turn_start_ms
     mode = "approach"
     block_released = False
+    turn_start_ms = None
 
 
 def update_error(new_error):

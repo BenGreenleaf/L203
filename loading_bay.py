@@ -8,7 +8,6 @@ import grabber_control as grabber
 frontsensor = DistanceSensor(0, 8, 9, 65)
 leftsensor = DistanceSensor(1, 2, 3, 41)
 rightsensor = DistanceSensor(0, 8, 9, 41) #need to find ids for each of these sensors
-
 mode = "block_finding"
 phase = "initialise"
 

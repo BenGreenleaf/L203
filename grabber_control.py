@@ -40,18 +40,22 @@ def move_servo(servo, current_angle, target_angle):
 def lift_up():
     global lift_angle
     lift_angle = move_servo(lift, lift_angle, 140)
+    return True
 
 def lift_down():
     global lift_angle
     lift_angle = move_servo(lift, lift_angle, 90)
+    return True
 
 def grab_open():
     global grab_angle
     grab_angle = move_servo(grab, grab_angle, 120)
+    return True
 
 def grab_close():
     global grab_angle
     grab_angle = move_servo(grab, grab_angle, 90)
+    return True
 
 
 

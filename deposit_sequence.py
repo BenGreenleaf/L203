@@ -41,9 +41,9 @@ def deposit_block_actions(mode, state):
         motor.set_left(speed)
         motor.set_right(speed)
     elif mode == "deposit":
-        grabber.lift_down()
-        grabber.grab_open()
-        block_released = True
+        lowered = grabber.lift_down()
+        opened = grabber.grab_open()
+        block_released = lowered and opened
     elif mode == "reversing":
         motor.set_left(-speed)
         motor.set_right(-speed)

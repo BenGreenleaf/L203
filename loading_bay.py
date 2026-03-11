@@ -3,6 +3,7 @@ from sensor_ToF import DistanceSensor
 import line_sensor_control as sensors
 from utime import sleep
 import motor_control_functions as motor
+import grabber_control as grabber
 
 frontsensor = DistanceSensor(111)
 leftsensor = DistanceSensor(110)
@@ -11,7 +12,7 @@ rightsensor = DistanceSensor(100) #need to find ids for each of these sensors
 mode = "block_finding"
 phase = None
 
-speed = 80
+speed = 40
 timer = 0
 wall_counter = 0
 saved_timer = 0
@@ -29,6 +30,8 @@ centre_streak = 0
 last_dir = 0
 align_ticks = 0
 correction_speed = 40
+last_error = 0
+reverse_timer = 0
 
 sensor_states = {
     "front": {
@@ -97,18 +100,32 @@ def scanning_mode(state, mode, phase, d_sum):
             timer += 1
             return "block_finding", "obstruction", False
     
-    if mode == "block_found" and phase == None:
+    if mode == "block_found":
         if state == (0,1,1,0) and phase == None:
-            return "block_found", "reversing", False
-        if state == (1,1,1,0) and phase == "reversing":
+            return "block_found", "advance", False
+        if state == (1,1,1,0) and phase == "advance":
             return "block_found", "turning", False
         if state == (1,1,1,1) and phase == "turning":
             return "block_found", "approach", True
         
     return mode, phase, False
 
-def scanning_actions():
-    ...
+def scanning_actions(mode, phase, state, type):
+    if mode == "block_finding":
+        follow_line(state)
+    elif mode == "block_found" and phase == "advance":
+        motor.set_left(speed)
+        motor.set_right(speed)
+    elif mode == "block_found" and phase == "turning":
+        if type == "left":
+            motor.set_left(-speed)
+            motor.set_right(speed)
+        elif type == "right":
+            motor.set_left(speed)
+            motor.set_right(-speed)
+    elif mode == "block_found" and phase == "approach":
+        motor.set_left(speed)
+        motor.set_right(speed)
     
 def follow_line(state):
         global error, last_error, last_dir, align_ticks, centre_streak
@@ -123,7 +140,7 @@ def follow_line(state):
             new_error = error
 
         alpha = 0.7
-        new_error = alpha*new_error + (1-alpha)*new_error
+        new_error = alpha*new_error + (1-alpha)*new_error #needs changing
 
         update_error(new_error)
         base = speed #adjust
@@ -158,30 +175,46 @@ def follow_line(state):
                     last_dir = 0
     
 
+
+
+
 def collection_actions(mode, phase, state):
-    global error, last_error, last_dir, align_ticks, centre_streak
-    if mode == "block_found" or mode == "collecting" and phase == "approach": #literally copied line following code because it is much easier than trying to navigate through to line following from this function
+    global error, last_error, last_dir, align_ticks, centre_streak, block_collected, block_lifted
+    if (mode == "block_found" or mode == "collecting") and phase == "approach": #literally copied line following code because it is much easier than trying to navigate through to line following from this function
         follow_line(state)
     elif mode == "collecting" and phase == "lowering":
-        ...
+        motor.set_right(0)
+        motor.set_left(0)
+        closed = grabber.grab_close()
+        block_collected = closed
+    elif mode == "collecting" and phase == "lifting":
+        lifted = grabber.lift_up()
+        block_lifted = lifted
+    elif mode == "collecting" and phase == "reversing":
+        motor.set_left(-speed)
+        motor.set_right(-speed)
+    elif mode == "turning":
+        motor.set_left(-speed)
+        motor.set_right(speed)
 
-    
-    
-def collection_mode(state, mode, phase, d):
-    global front_timer
+
+def collection_mode(state, mode, phase, distance):
+    global front_timer, reverse_timer, block_collected, block
     if mode == "block_found" and phase == "approach":
         front_timer = 0
+        block_collected = False
+        block_lifted = False
         return "collecting", "approach", False
     
     if mode == "collecting":
         if phase == "approach":
-            if d > front_threshold:
+            if distance > front_threshold:
                 return "collecting", "approach", False
-            elif d <= front_threshold:
+            elif distance <= front_threshold:
                 if front_timer < 4:
                     front_timer += 1
                     return "collecting", "approach", False
-                elif front_timer > 4:
+                elif front_timer >= 4:
                     return "collecting", "lowering", False
         
         elif phase == "lowering":
@@ -194,38 +227,31 @@ def collection_mode(state, mode, phase, d):
             if block_lifted == False:
                 return "collecting", "lifting", False
             elif block_lifted == True:
+                reverse_timer = 0 
                 return "collecting", "reversing", False
             
         elif phase == "reversing":
-            sleep(2) #check
-            return "turning", "turn_start"
+            if reverse_timer <20:
+                reverse_timer += 1 
+                return "collecting", "reversing", False
+            else:
+                return "turning", "turn_start", False
         
-    elif mode == "rotate_start":
+    elif mode == "turning" and phase == "turn_start":
         if state == (1,0,0,1):
-            return "rotate_end", False
+            return "turning", "turn_end", False
         else:
-            return "rotate_start", False
-    elif mode == "rotate_end":
+            return "turning", "turn_start", False
+    elif mode == "turning" and phase == "turn_end":
         if state == (0,1,1,0):
-            return "rotate_end", True
+            return "turning", "turn_end", True
         else:
-            return "rotate_end", False
+            return "turning", "turn_end", False
+        
+    return mode, phase, False
         
 
 
-        
-        
-               
-        
-            
-    
-
-        
-
-    ...
-
-    
-    
 
 def reset_scan_state():
     global sensor_states, scanning_done, front_timer, timer, wall_counter
@@ -271,7 +297,8 @@ def scanning_tick(state, sensor):
     
     d_sum = update_distance(sensor, new_distance)
     mode, phase, scanning_done = scanning_mode(state, mode, phase, d_sum)
-    print(f"distance: {sensor_states[sensor]['distance']}, d: {sensor_states[sensor]['distance']}, mode: {mode}, phase: {phase}")
+    scanning_actions(mode, phase, state, sensor)
+    print(f"distance: {sensor_states[sensor]['distance']}, d: {sensor_states[sensor]['d']}, mode: {mode}, phase: {phase}")
 
     return scanning_done
     
@@ -280,5 +307,10 @@ def collection_tick(state):
     global mode, phase, collection_done
     sensor = "front" 
     new_distance = frontsensor.read_distance()
+    mode, phase, collection_done = collection_mode(state, mode, phase, new_distance)
+    collection_actions(mode, phase, state)
+
+    return collection_done
+
 
 

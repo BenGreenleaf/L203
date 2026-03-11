@@ -16,6 +16,7 @@ import deposit_sequence as deposit
 import route_executor as route
 import task_control as task
 import path_finding as path
+import grabber_control as grabber
 # import loading_bay as loading
 import network
 import socket
@@ -43,6 +44,8 @@ scan_done = False
 start = True
 
 print("uploaded")
+grabber.grab_close()
+grabber.lift_up()
 
 sleep(2)
 
@@ -62,6 +65,9 @@ while True: # continuous loop that controls the entire functionality
             if start == True and instructions:
                 instructions = instructions[1:] # skip the first instruction as the robot is already facing the correct direction for the first move
                 start = False
+            elif task.get_previous_step()['type'] == "DEPOSIT" and instructions:
+                instructions = instructions[1:]
+                
             print(f"{instructions}--------------------------------------------------------------------------------------------------------------")
             route_loaded = True
         
@@ -138,6 +144,7 @@ while True: # continuous loop that controls the entire functionality
         print(f"deposit, mode:{deposit.mode} phase:{state}")
         if deposit_done:
             colour = None
+            current_orientation = "north"
             task.advance_stage()
             route_loaded = False
             deposit.reset_deposit_state()

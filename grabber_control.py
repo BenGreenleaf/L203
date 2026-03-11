@@ -5,9 +5,9 @@ from utime import sleep
 MIN_ANGLE = 10
 MAX_ANGLE = 170
 step = 2
-move_delay = 1
+move_delay = 0.08
 lift_angle = 80
-grab_angle = 30
+grab_angle = 25
 
 lift = PWM(Pin(13))
 lift.freq(50)
@@ -50,14 +50,14 @@ def lift_down():
     lift_angle = move_servo(lift, lift_angle, 80)
     return True
 
-def grab_open():
-    global grab_angle
-    grab_angle = move_servo(grab, grab_angle, 43)#120
-    return True
-
 def grab_close():
     global grab_angle
-    grab_angle = move_servo(grab, grab_angle, 90)
+    grab_angle = move_servo(grab, grab_angle, 43)
+    return True
+
+def grab_open():
+    global grab_angle
+    grab_angle = move_servo(grab, grab_angle, 25)
     return True
 
 if __name__ == "__main__":
@@ -65,5 +65,9 @@ if __name__ == "__main__":
     print_servo_angles()
     sleep(1)
 
-grab_open()
+# grab_close()
+# lift_up()
+# sleep(2)
+# lift_down()
+#grab_open()
 #lift_up()

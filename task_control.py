@@ -5,9 +5,9 @@ stage = 0
 action = "collect_1"
 
 sequence = [
-    {"name": "go_collect_1", "type": "NAVIGATE", "goal": 7}, #potentially slightly excessive but i want the names of the states for debugging if necessary
-    {"name": "go_collect_test", "type": "NAVIGATE", "goal": 34}, #for testing only
-    {"name": "go_deposit_TEST","type": "NAVIGATE", "goal": 6},
+    {"name": "go_collect_1", "type": "NAVIGATE", "goal": 4}, #potentially slightly excessive but i want the names of the states for debugging if necessary
+    #{"name": "go_collect_test", "type": "NAVIGATE", "goal": 34}, #for testing only
+    #{"name": "go_deposit_TEST","type": "NAVIGATE", "goal": 6},
     {"name": "deposit_TEST",   "type": "DEPOSIT"},
     {"name": "go_collect_test2", "type": "NAVIGATE", "goal": 14},
     {"name": "scan_1",      "type": "SCAN"},
@@ -30,6 +30,9 @@ sequence = [
 
 def get_current_step():
     return sequence[stage]
+
+def get_previous_step():
+    return sequence[stage-1]
 
 
 def advance_stage():

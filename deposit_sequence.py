@@ -11,7 +11,7 @@ last_dir = 0
 align_ticks = 0
 correction_speed = 40
 turn_start_ms = None
-turn_duration = 1780
+turn_duration = 1740
 
 
 
@@ -28,6 +28,7 @@ def deposit_block_mode(mode, state):
             return "deposit", False
     elif mode == "reversing":
         if state in [(0,1,1,0), (0,1,0,0), (0,0,1,0)]:
+            sleep(0.5)
             turn_start_ms = ticks_ms()
             return "rotate", False
         else:
@@ -49,9 +50,12 @@ def deposit_block_actions(mode, state):
         print("line following")
         follow_line(state)
     elif mode == "deposit":
+        motor.set_left(0)
+        motor.set_right(0)
         lowered = grabber.lift_down()
         opened = grabber.grab_open()
-        block_released = lowered and opened
+        lifted = grabber.lift_up()
+        block_released = lowered and opened and lifted
     elif mode == "reversing":
         motor.set_left(-speed)
         motor.set_right(-speed)

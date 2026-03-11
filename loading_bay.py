@@ -5,12 +5,12 @@ from utime import sleep
 import motor_control_functions as motor
 import grabber_control as grabber
 
-frontsensor = DistanceSensor(0, 8, 9, )
-leftsensor = DistanceSensor(0, 2, 3)
-rightsensor = DistanceSensor(100) #need to find ids for each of these sensors
+frontsensor = DistanceSensor(0, 8, 9, 65)
+leftsensor = DistanceSensor(1, 2, 3, 41)
+rightsensor = DistanceSensor(0, 8, 9, 41) #need to find ids for each of these sensors
 
 mode = "block_finding"
-phase = None
+phase = "initialise"
 
 speed = 40
 timer = 0
@@ -85,16 +85,20 @@ def scanning_mode(state, mode, phase, d_sum):
     global timer, saved_timer, wall_counter
 
     if mode == "block_finding":
-
-        if d_sum >= plus_threshold:
+        if phase == "initialise":
+            sleep(2)
+            return "block_finding", None, False
+        elif d_sum <= minus_threshold:
             timer = 0
             return "block_finding", "obstruction", False
-        elif d_sum <= minus_threshold:
+        elif d_sum >= plus_threshold:
             return "block_finding", "obstruction_end", False
         elif phase == "obstruction_end" and timer <= xt:
             wall_counter += 1
+            print("wall")
             return "block_finding", None, False
         elif phase == "obstruction" and timer > xt:
+             print("block found")
              return "block_found", None, False
         elif phase == "obstruction" and timer <= xt:
             timer += 1
@@ -112,7 +116,11 @@ def scanning_mode(state, mode, phase, d_sum):
 
 def scanning_actions(mode, phase, state, type):
     if mode == "block_finding":
-        follow_line(state)
+        if phase == "initialise":
+            motor.set_left(-speed)
+            motor.set_right(-speed)
+        else:
+            follow_line(state)
     elif mode == "block_found" and phase == "advance":
         motor.set_left(speed)
         motor.set_right(speed)

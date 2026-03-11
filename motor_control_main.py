@@ -4,6 +4,7 @@ from machine import Pin, PWM
 from utime import sleep
 from line_sensor_control import read_sensors
 import motor_control_functions as motor
+import grabber_control as grabber
 
 speed = 80 #desired speed (just as a variable for now, can update or change depending on mode)
 mode = "LINE_FOLLOWING"
@@ -137,14 +138,14 @@ def update_mode(state, mode, phase, turn): # mode is the higher level state of t
             elif phase == "turning_end":
                 if state in [(0,1,1,1),(0,1,0,1)]:
                     if optional_right_turn == True:
-                        sleep(0.20)
+                        sleep(0.35)
                     else:
                         sleep(0.14)
                     return "RIGHT_TURN", "exiting"
                 else:
                     return "RIGHT_TURN", "turning_end"
             elif phase == "exiting":
-                if state in [(0,1,1,0), (0,1,0,0)]:
+                if state in [(0,1,1,0), (0,0,1,0), (0,1,0,0)]:
                     return "LINE_FOLLOWING", None
                 else:
                     return "RIGHT_TURN", "exiting"

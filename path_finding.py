@@ -29,6 +29,7 @@ graph_list = {1: [(2, 10, "north")],
            24: [(23, 12, "south")],
            25: [(16, 47, "east"), (26, 36.3, "north")],
            26: [(25, 36.3, "south"), (27, 9.5, "north")],
+           27: [(26, 9.5, "south"), (28, 9.5, "north")],
            28: [(27, 9.5, "south"), (28, 9.5, "north")],
            29: [(28, 9.5, "south"), (30, 9.5, "north")],
            30: [(29, 9.5, "south"), (31, 9.5, "north")],
@@ -93,6 +94,7 @@ def turn_decider(graph, last_node, current_orientation, next_node):
         "west":  {"north": "left",     "east": "180 turn", "south": "right",    "west": "straight"},
     }
     if len(graph_list[last_node]) == 2: # if there are only 2 edges, it's a straight line, so ignore the turn instruction
+        print("swapped given node: "+str(last_node))
         return "straight"
 
     return turn_map[direction][current_orientation]
@@ -116,7 +118,7 @@ def plan_route(start, goal, current_orientation):
 
 
 if __name__ == "__main__":
-    path, total_dist = dijkstra_shortest_path(graph, 1, 16)
+    path, total_dist = dijkstra_shortest_path(graph, 7, 34)
     print("Shortest path:", path)
     print("Total distance:", total_dist)
     print("Directions:", convert_path_to_actions(graph, path, "north"))

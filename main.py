@@ -41,7 +41,12 @@ colour = None
 scan_started = False
 scan_done = False
 start = True
+
+print("uploaded")
+
 sleep(2)
+
+
 
 while True: # continuous loop that controls the entire functionality
     state = sensors.read_sensors()
@@ -57,7 +62,7 @@ while True: # continuous loop that controls the entire functionality
             if start == True and instructions:
                 instructions = instructions[1:] # skip the first instruction as the robot is already facing the correct direction for the first move
                 start = False
-            print(instructions)
+            print(f"{instructions}--------------------------------------------------------------------------------------------------------------")
             route_loaded = True
         
         if instructions and instructions[0] == "straight":
@@ -87,6 +92,7 @@ while True: # continuous loop that controls the entire functionality
                 _dist, current_orientation = path.graph[u][v]
                 print("advancing step")
                 task.advance_stage()
+                print(step)
                 route_loaded = False
         
     elif step_type == "SCAN":
@@ -126,8 +132,10 @@ while True: # continuous loop that controls the entire functionality
 
 
     elif step_type == "DEPOSIT":
+        
         deposit.mode, deposit_done = deposit.deposit_block_mode(deposit.mode, state)
         deposit.deposit_block_actions(deposit.mode, state)
+        print(f"deposit, mode:{deposit.mode} phase:{state}")
         if deposit_done:
             colour = None
             task.advance_stage()

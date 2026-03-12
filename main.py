@@ -18,7 +18,7 @@ import task_control as task
 import path_finding as path
 import grabber_control as grabber
 import motor_control_functions as mc
-# import loading_bay as loading
+import loading_bay as loading
 import network
 import socket
 import time
@@ -45,13 +45,19 @@ scan_started = False
 scan_done = False
 start = True
 
-print("uploaded")
-grabber.grab_open()
-grabber.lift_down_top_rack()
-grabber.grab_close()
-grabber.lift_up()
+import os
+print(os.listdir())
+print(os.listdir('libs'))
+print(os.listdir('libs/DFRobot_TMF8x01'))
+print(os.listdir('libs/DFRobot_TMF8x01/fw/TMF8701'))
 
-sleep(2)
+print("uploaded")
+# grabber.grab_open()
+# grabber.lift_down_top_rack()
+# grabber.grab_close()
+# grabber.lift_up()
+
+# sleep(2)
 
 
 
@@ -105,40 +111,35 @@ while True: # continuous loop that controls the entire functionality
                 print(step)
                 route_loaded = False
         
-    #elif step_type == "SCAN":
-     #   if not scan_started:
-      #      loading.reset_scan_state()
-       #     scan_type = step["name"]
-#
- #           if scan_type == "scan_1" or "scan_3":
-  #              sensor = "left"
-   #         elif scan_type == "scan_2" or "scan_4":
-    #            sensor = "right"
-     #           scan_started = True
-      #  
-       # if scan_started:
-       #     if not scan_done:
-        #        scan_done = loading.scanning_tick(state, sensor)
-         #   if scan_done:
-          #      loading.collection_tick(state)
+    elif step_type == "SCAN":
+        print('entered scan')
+        if not scan_started:
+           loading.reset_scan_state()
+           scan_type = step["name"]
 
-
-
-        
-
-        
-       # colour = res.identify()
-        #if colour == "RED":
-        #    task.set_next_deposit_goal(6)
-        #elif colour == "BLUE": #set node and positioning as east if in lower right, west if in lower left (loading bay will leave the robot facing outward)
-        #    task.set_next_deposit_goal(44)
-        #elif colour == "GREEN":
-        #    task.set_next_deposit_goal(43)
-        #elif colour == "YELLOW":
-        #    task.set_next_deposit_goal(4)
-        #task.advance_stage()
-        #route_loaded = False
-        #scan_started = False
+           if scan_type == "scan_1" or "scan_3":
+               sensor = "left"
+           elif scan_type == "scan_2" or "scan_4":
+               sensor = "right"
+               scan_started = True
+       
+        if scan_started:
+           if not scan_done:
+               scan_done = loading.scanning_tick(state, sensor)
+           if scan_done:
+               loading.collection_tick(state)  
+        colour = res.identify()
+        if colour == "RED":
+            task.set_next_deposit_goal(6)
+        elif colour == "BLUE": #set node and positioning as east if in lower right, west if in lower left (loading bay will leave the robot facing outward)
+            task.set_next_deposit_goal(44)
+        elif colour == "GREEN":
+            task.set_next_deposit_goal(43)
+        elif colour == "YELLOW":
+            task.set_next_deposit_goal(4)
+        task.advance_stage()
+        route_loaded = False
+        scan_started = False
 
 
     elif step_type == "DEPOSIT":

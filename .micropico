@@ -1,3 +1,4 @@
 {
-    "info": "This file is just used to identify a project folder."
+    "info": "This file is just used to identify a project folder.",
+    "sync_file_types": ["py", "txt", "json", "hex"]
 }

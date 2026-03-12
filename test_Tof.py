@@ -2,9 +2,10 @@ from machine import I2C, Pin
 import time
 
 # pin20=SCL(GP15), pin19=SDA(GP14), pin18=GND, pin36=3V3
-i2c = I2C(1, scl=Pin(15), sda=Pin(14), freq=400000)
+i2c = I2C(0, scl=Pin(9), sda=Pin(8), freq=400000)
 
 VL53_ADDR = 0x29
+
 SYSRANGE_START = 0x00
 SYSTEM_INTERRUPT_CLEAR = 0x0B
 RESULT_INTERRUPT_STATUS = 0x13
@@ -69,6 +70,7 @@ if VL53_ADDR not in i2c.scan():
 print("VL53 model id:", hex(read_u8(0xC0)))
 stop_var = boot_sequence()
 
+print("model:", hex(read_u8(0xC0)))
 while True:
     distance_mm = single_read_mm(stop_var)
     distance_cm = distance_mm / 10.0

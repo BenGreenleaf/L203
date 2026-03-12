@@ -140,7 +140,7 @@ def update_mode(state, mode, phase, turn): # mode is the higher level state of t
                     if optional_right_turn == True:
                         sleep(0.35)
                     else:
-                        sleep(0.14)
+                        sleep(0.20)
                     return "RIGHT_TURN", "exiting"
                 else:
                     return "RIGHT_TURN", "turning_end"
@@ -183,10 +183,10 @@ def update_mode(state, mode, phase, turn): # mode is the higher level state of t
             elif phase == "turning_end":
                 if state == (1,1,1,0):
                     if optional_left_turn == True:
-                        sleep(0.45)
+                        sleep(0.65)
                         optional_left_turn = False
                     else:
-                        sleep(0.22)
+                        sleep(0.45)
                     return "LEFT_TURN", "exiting"
                 else:
                     return "LEFT_TURN", "turning_end"

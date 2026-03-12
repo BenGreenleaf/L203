@@ -51,6 +51,7 @@ class DistanceSensor:
                 return distance
             else:
                 self.last_distance = None
+                print("no distance")
             return self.last_distance
 
     def stop(self):

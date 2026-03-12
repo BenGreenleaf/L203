@@ -9,8 +9,8 @@ import task_control as task
 frontsensor = DistanceSensor(0, 8, 9, 65)
 leftsensor = DistanceSensor(1, 2, 3, 41)
 rightsensor = DistanceSensor(0, 8, 9, 41) #need to find ids for each of these sensors
-mode = "block_finding"
-phase = "initialise"
+mode = "block_finding" #change back to block finding
+phase = "initialise" #change back to initialise
 
 speed = 40
 timer = 0
@@ -99,7 +99,7 @@ def scanning_mode(state, mode, phase, d_sum):
             return "block_finding", None, False
         elif phase == "obstruction" and timer > xt:
              print("block found")
-             return "block_found", None, False
+             return "block_finding", None, False #change later
         elif phase == "obstruction" and timer <= xt:
             timer += 1
             return "block_finding", "obstruction", False
@@ -122,8 +122,7 @@ def scanning_actions(mode, phase, state, type):
         else:
             follow_line(state)
     elif mode == "block_found" and phase == "advance":
-        motor.set_left(speed)
-        motor.set_right(speed)
+        follow_line(state)
     elif mode == "block_found" and phase == "turning":
         if type == "left":
             motor.set_left(-speed)
@@ -160,7 +159,7 @@ def follow_line(state):
             # align_ticks = 0 
             centre_streak = 0
 
-            kp = 20
+            kp = 15
             kd = 5
             correction = kp * error + kd * (error - last_error)
             motor.set_left(int(base - correction))
@@ -319,7 +318,9 @@ def collection_tick(state):
     global mode, phase, collection_done
     sensor = "front" 
     new_distance = frontsensor.read_distance()
+    print(new_distance)
     mode, phase, collection_done = collection_mode(state, mode, phase, new_distance)
+    print(mode, phase)
     collection_actions(mode, phase, state)
 
     return collection_done

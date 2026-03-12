@@ -70,12 +70,3 @@ if __name__ == "__main__":
     print_servo_angles()
     sleep(1)
 
-lift_up()
-grab_open()
-sleep(2)
-lift_down_bottom_rack()
-grab_close()
-sleep(2)
-lift_up()
-sleep(5)
-grab_open()

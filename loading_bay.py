@@ -4,6 +4,7 @@ import line_sensor_control as sensors
 from utime import sleep
 import motor_control_functions as motor
 import grabber_control as grabber
+import task_control as task
 
 frontsensor = DistanceSensor(0, 8, 9, 65)
 leftsensor = DistanceSensor(1, 2, 3, 41)
@@ -192,8 +193,12 @@ def collection_actions(mode, phase, state):
     elif mode == "collecting" and phase == "lowering":
         motor.set_right(0)
         motor.set_left(0)
+        if task.get_current_step()['scan_type'] == "lower":
+            lowered = grabber.lift_down_bottom_rack()
+        else:
+            lowered = grabber.lift_down_top_rack()
         closed = grabber.grab_close()
-        block_collected = closed
+        block_collected = closed and lowered
     elif mode == "collecting" and phase == "lifting":
         lifted = grabber.lift_up()
         block_lifted = lifted

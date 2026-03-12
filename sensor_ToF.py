@@ -1,6 +1,7 @@
 from machine import Pin, I2C
 from libs.VL53L0X.VL53L0X import VL53L0X
 from libs.DFRobot_TMF8x01.DFRobot_TMF8x01 import DFRobot_TMF8701
+from utime import sleep
 
 
 class DistanceSensor:
@@ -16,6 +17,11 @@ class DistanceSensor:
             self.tmf_sensor = DFRobot_TMF8701(self.i2c_bus, address)
             self.tmf_sensor.begin()
             self.sensor_type = "TMF8x01"
+            while(self.tmf_sensor.begin() != 0):
+                print("   Initialisation failed")
+                sleep(0.5)
+            
+            self.tmf_sensor.start_measurement(calib_m = self.tmf_sensor.eMODE_NO_CALIB, mode = self.tmf_sensor.eDISTANCE)
 
     # def __init__(self, i2c_id=0, sda_pin=8, scl_pin=9, address=0x29, sensor_type="auto"):
     #     self.i2c_bus = I2C(i2c_id, sda=Pin(sda_pin), scl=Pin(scl_pin))
@@ -45,7 +51,7 @@ class DistanceSensor:
         if self.sensor_type == "VL53L0X":
             return self.vlx_sensor.read()
         elif self.sensor_type == "TMF8x01":
-            if self.tmf_sensor.is_data_ready():
+            if self.tmf_sensor.is_data_ready() == True:
                 distance = self.tmf_sensor.get_distance_mm()
                 self.last_distance = distance
                 return distance

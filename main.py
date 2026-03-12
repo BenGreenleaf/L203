@@ -41,10 +41,9 @@ goal = None
 path_nodes = None
 total_dist = None
 colour = None
-scan_started = False
-scan_done = False
+scan_started = True
+scan_done = True
 start = True
-collection_done = False
 
 import os
 print(os.listdir())
@@ -113,13 +112,13 @@ while True: # continuous loop that controls the entire functionality
                 route_loaded = False
         
     elif step_type == "SCAN":
+        print('entered scan')
         if not scan_started:
            loading.reset_scan_state()
            scan_type = step["name"]
 
            if scan_type == "scan_1" or "scan_3":
                sensor = "left"
-               scan_started = True
            elif scan_type == "scan_2" or "scan_4":
                sensor = "right"
                scan_started = True
@@ -128,30 +127,28 @@ while True: # continuous loop that controls the entire functionality
            if not scan_done:
                scan_done = loading.scanning_tick(state, sensor)
            if scan_done:
-               print("scanning done, now collecting")
-               collection_done = loading.collection_tick(state)  
-
-        if collection_done:
-            print('collecting done')
-            colour = res.identify()
-            if colour == "RED":
-                task.set_next_deposit_goal(6)
-            elif colour == "BLUE": #set node and positioning as east if in lower right, west if in lower left (loading bay will leave the robot facing outward)
-                task.set_next_deposit_goal(44)
-            elif colour == "GREEN":
-                task.set_next_deposit_goal(43)
-            elif colour == "YELLOW":
-                task.set_next_deposit_goal(4)
-            task.advance_stage()
-            route_loaded = False
-            scan_started = False
+               while True:
+                loading.collection_tick(state)  
+                sleep(0.5)
+        colour = res.identify()
+        if colour == "RED":
+            task.set_next_deposit_goal(6)
+        elif colour == "BLUE": #set node and positioning as east if in lower right, west if in lower left (loading bay will leave the robot facing outward)
+            task.set_next_deposit_goal(44)
+        elif colour == "GREEN":
+            task.set_next_deposit_goal(43)
+        elif colour == "YELLOW":
+            task.set_next_deposit_goal(4)
+        task.advance_stage()
+        route_loaded = False
+        scan_started = False
 
 
     elif step_type == "DEPOSIT":
         
         deposit.mode, deposit_done = deposit.deposit_block_mode(deposit.mode, state)
         deposit.deposit_block_actions(deposit.mode, state)
-        print(f"deposit, mode:{deposit.mode} phase:{state}, {scan_done}, {collection_done}")
+        print(f"deposit, mode:{deposit.mode} phase:{state}")
         if deposit_done:
             colour = None
             current_orientation = "north"

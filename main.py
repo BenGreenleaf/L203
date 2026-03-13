@@ -22,10 +22,11 @@ import loading_bay as loading
 import network
 import socket
 import time
-from machine import Pin
+from machine import Pin, reset
 import resistance_identifier as res
 #import loading_bay as loading
 
+reset_button = Pin(22, Pin.IN, Pin.PULL_UP)
 green_led = Pin(10, Pin.OUT)
 red_led = Pin(12, Pin.OUT)
 blue_led = Pin(14, Pin.OUT)
@@ -53,6 +54,10 @@ start = True
 
 # sleep(2)
 
+if reset_button.value() == 0:
+    print("reset pressed")
+    sleep(0.2)
+    reset()
 
 
 while True: # continuous loop that controls the entire functionality

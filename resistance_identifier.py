@@ -1,6 +1,7 @@
 
 from machine import Pin, ADC
 from utime import sleep
+import grabber_control as grabber
 
 adc = ADC(26)      # ADC0 = GP26
 VREF = 3.3
@@ -21,6 +22,7 @@ v_yellow = 2.05
 v_upper = 2.11
 
 def identify():
+    global raw, v_adc
     raw = adc.read_u16()
     v_adc = raw * VREF / 65535
 
@@ -54,3 +56,12 @@ def identify():
             blue_led.value(0)
             return "YELLOW"
 
+
+grabber.grab_open()
+sleep(2)
+grabber.grab_close()
+while True:
+        colour = identify()
+        print(colour, v_adc)
+        sleep(0.1)
+    

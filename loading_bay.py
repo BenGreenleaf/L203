@@ -153,10 +153,17 @@ def scanning_mode(state, mode, phase, sensor):
             return "block_finding", None, False
         elif block_found(sensor_states[sensor]["raw_data"]):
             return "block_found", None, False #change later
-    if mode == "block_found":
+    if mode == "block_found" and sensor == "left": #bays where scanning is on the left
         if state == (0,1,1,0) and phase == None:
             return "block_found", "advance", False
         if state == (1,1,1,0) and phase == "advance":
+            return "block_found", "turning", False
+        if state == (1,1,1,1) and phase == "turning":
+            return "block_found", "approach", True
+    elif mode == "block_found" and sensor == "right": #bays where scanning is on the right
+        if state == (0,1,1,0) and phase == None:
+            return "block_found", "advance", False
+        if state == (0,1,1,1) and phase == "advance":
             return "block_found", "turning", False
         if state == (1,1,1,1) and phase == "turning":
             return "block_found", "approach", True
@@ -164,7 +171,7 @@ def scanning_mode(state, mode, phase, sensor):
     return mode, phase, False
 
 
-def scanning_actions(mode, phase, state, type):
+def scanning_actions(mode, phase, state, type): #type can be passed as sensor as they are both l/r
     if mode == "block_finding":
         if phase == "initialise":
             motor.set_left(-speed)
@@ -302,12 +309,13 @@ def collection_mode(state, mode, phase, distance):
             else:
                 turn_start_ms = ticks_ms()
                 return "turning", "turn_start", False
+            
     elif mode == "turning" and phase == "turn_start":
         if turn_start_ms is not None:
             print(ticks_diff(ticks_ms(), turn_start_ms))
         if turn_start_ms is None:
             return "turning", "turn_start", False
-        elif ticks_diff(ticks_ms(), turn_start_ms) >= turn_duration:
+        elif ticks_diff(ticks_ms(), turn_start_ms) >= turn_duration: #do we need two turning phases for this - maybe yes to rest motors 
             return "turning", "turn_end", False
         else:
             return "turning", "turn_start", False

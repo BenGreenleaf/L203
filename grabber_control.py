@@ -69,4 +69,3 @@ if __name__ == "__main__":
     print("Testing grabber control...")
     print_servo_angles()
     sleep(1)
-

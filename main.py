@@ -41,17 +41,10 @@ goal = None
 path_nodes = None
 total_dist = None
 colour = None
-scan_started = True
-scan_done = True
+scan_started = False
+scan_done = False
 start = True
 
-import os
-print(os.listdir())
-print(os.listdir('libs'))
-print(os.listdir('libs/DFRobot_TMF8x01'))
-print(os.listdir('libs/DFRobot_TMF8x01/fw/TMF8701'))
-
-print("uploaded")
 # grabber.grab_open()
 # grabber.lift_down_top_rack()
 # grabber.grab_close()
@@ -119,6 +112,7 @@ while True: # continuous loop that controls the entire functionality
 
            if scan_type == "scan_1" or "scan_3":
                sensor = "left"
+               scan_started = True
            elif scan_type == "scan_2" or "scan_4":
                sensor = "right"
                scan_started = True
@@ -126,22 +120,19 @@ while True: # continuous loop that controls the entire functionality
         if scan_started:
            if not scan_done:
                scan_done = loading.scanning_tick(state, sensor)
-           if scan_done:
-               while True:
-                loading.collection_tick(state)  
-                sleep(0.5)
-        colour = res.identify()
-        if colour == "RED":
-            task.set_next_deposit_goal(6)
-        elif colour == "BLUE": #set node and positioning as east if in lower right, west if in lower left (loading bay will leave the robot facing outward)
-            task.set_next_deposit_goal(44)
-        elif colour == "GREEN":
-            task.set_next_deposit_goal(43)
-        elif colour == "YELLOW":
-            task.set_next_deposit_goal(4)
-        task.advance_stage()
-        route_loaded = False
-        scan_started = False
+               print(f"scanning, sensor: {sensor}, scan_done: {scan_done}")
+        # colour = res.identify()
+        # if colour == "RED":
+        #     task.set_next_deposit_goal(6)
+        # elif colour == "BLUE": #set node and positioning as east if in lower right, west if in lower left (loading bay will leave the robot facing outward)
+        #     task.set_next_deposit_goal(44)
+        # elif colour == "GREEN":
+        #     task.set_next_deposit_goal(43)
+        # elif colour == "YELLOW":
+        #     task.set_next_deposit_goal(4)
+        # task.advance_stage()
+        # route_loaded = False
+        # scan_started = False
 
 
     elif step_type == "DEPOSIT":

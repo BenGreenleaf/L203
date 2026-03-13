@@ -29,7 +29,7 @@ error = 0
 centre_streak = 0
 last_dir = 0
 align_ticks = 0
-correction_speed = 40
+correction_speed = 7
 last_error = 0
 reverse_timer = 0
 
@@ -59,6 +59,7 @@ sensor_states = {
 
 x = 150 #threshold? may be better to determine state based on jumps between a further and closer distance
 xt = 20 #another threshold that needs tuning
+side_threshold = 260
 
 def update_error(new_error):
     global error, last_error
@@ -81,29 +82,68 @@ def update_distance(sensor, new_distance):
     return distance_state["d_sum"]
     
 
-def scanning_mode(state, mode, phase, d_sum):
-    global timer, saved_timer, wall_counter
+# def scanning_mode(state, mode, phase, sensor):
+#     d_sum = sensor_states[sensor]["d_sum"]
+#     global timer, saved_timer, wall_counter
 
+#     if mode == "block_finding":
+#         if phase == "initialise":
+#             sleep(2)
+#             return "block_finding", None, False
+#         elif d_sum <= minus_threshold:
+#             timer = 0
+#             return "block_finding", "obstruction", False
+#         elif d_sum >= plus_threshold:
+#             return "block_finding", "obstruction_end", False
+#         elif phase == "obstruction_end" and timer <= xt:
+#             wall_counter += 1
+#             print("wall")
+#             return "block_finding", None, False
+#         elif phase == "obstruction" and timer > xt:
+#              print("block found")
+#              return "block_finding", None, False #change later
+#         elif phase == "obstruction" and timer <= xt:
+#             timer += 1
+#             return "block_finding", "obstruction", False
+    
+#     if mode == "block_found":
+#         if state == (0,1,1,0) and phase == None:
+#             return "block_found", "advance", False
+#         if state == (1,1,1,0) and phase == "advance":
+#             return "block_found", "turning", False
+#         if state == (1,1,1,1) and phase == "turning":
+#             return "block_found", "approach", True
+        
+#     return mode, phase, False
+
+def block_found(data):
+    gap_threshold = 5
+    valids_threshold = 4
+    gap = 0
+    valids = 0
+    for d in data:
+        if d <= side_threshold and gap <= gap_threshold:
+            valids += 1
+            gap = 0
+        elif d <= side_threshold and gap > gap_threshold:
+            valids = 1
+            gap = 0
+        else:
+            gap += 1
+
+    if valids >= valids_threshold:
+        return(True)
+
+
+
+def scanning_mode(state, mode, phase, sensor):
     if mode == "block_finding":
         if phase == "initialise":
             sleep(2)
             return "block_finding", None, False
-        elif d_sum <= minus_threshold:
-            timer = 0
-            return "block_finding", "obstruction", False
-        elif d_sum >= plus_threshold:
-            return "block_finding", "obstruction_end", False
-        elif phase == "obstruction_end" and timer <= xt:
-            wall_counter += 1
-            print("wall")
-            return "block_finding", None, False
-        elif phase == "obstruction" and timer > xt:
-             print("block found")
-             return "block_finding", None, False #change later
-        elif phase == "obstruction" and timer <= xt:
-            timer += 1
-            return "block_finding", "obstruction", False
-    
+        elif block_found(sensor_states[sensor]["d_window"]):
+            print("block found")
+            return "block_finding", None, False #change later
     if mode == "block_found":
         if state == (0,1,1,0) and phase == None:
             return "block_found", "advance", False
@@ -113,6 +153,7 @@ def scanning_mode(state, mode, phase, d_sum):
             return "block_found", "approach", True
         
     return mode, phase, False
+
 
 def scanning_actions(mode, phase, state, type):
     if mode == "block_finding":
@@ -159,7 +200,7 @@ def follow_line(state):
             # align_ticks = 0 
             centre_streak = 0
 
-            kp = 15
+            kp = 10
             kd = 5
             correction = kp * error + kd * (error - last_error)
             motor.set_left(int(base - correction))
@@ -307,7 +348,7 @@ def scanning_tick(state, sensor):
         new_distance = rightsensor.read_distance()
     
     d_sum = update_distance(sensor, new_distance)
-    mode, phase, scanning_done = scanning_mode(state, mode, phase, d_sum)
+    mode, phase, scanning_done = scanning_mode(state, mode, phase, sensor)
     scanning_actions(mode, phase, state, sensor)
     print(f"distance: {sensor_states[sensor]['distance']}, d: {sensor_states[sensor]['d']}, mode: {mode}, phase: {phase}")
 

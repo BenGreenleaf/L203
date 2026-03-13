@@ -1,7 +1,7 @@
 from machine import I2C, Pin
 from sensor_ToF import DistanceSensor
 import line_sensor_control as sensors
-from utime import sleep
+from utime import sleep, ticks_ms, ticks_diff
 import motor_control_functions as motor
 import grabber_control as grabber
 import task_control as task
@@ -21,7 +21,7 @@ plus_threshold = 100
 minus_threshold = -100 #need to tune these
 scanning_done = False
 collection_done = False
-front_threshold = 20
+front_threshold = 130
 front_timer = 0 
 block_collected = False
 block_lifted = False
@@ -29,9 +29,11 @@ error = 0
 centre_streak = 0
 last_dir = 0
 align_ticks = 0
-correction_speed = 7
+correction_speed = 8
 last_error = 0
 reverse_timer = 0
+turn_start_ms = None
+turn_duration = 3000
 
 sensor_states = {
     "front": {
@@ -39,27 +41,30 @@ sensor_states = {
         "last_distance": frontsensor.read_distance(),
         "d": 0,
         "d_window": [],
-        "d_sum": 0
+        "d_sum": 0,
+        "raw_data": []
     },
     "left": {
         "distance": leftsensor.read_distance(),
         "last_distance": leftsensor.read_distance(),
         "d": 0,
         "d_window": [],
-        "d_sum": 0
+        "d_sum": 0,
+        "raw_data": []
     },
     "right": {
         "distance": rightsensor.read_distance(),
         "last_distance": rightsensor.read_distance(),
         "d": 0,
         "d_window": [],
-        "d_sum": 0
+        "d_sum": 0,
+        "raw_data": []
     }
 }
 
 x = 150 #threshold? may be better to determine state based on jumps between a further and closer distance
 xt = 20 #another threshold that needs tuning
-side_threshold = 260
+side_threshold = 255
 
 def update_error(new_error):
     global error, last_error
@@ -78,6 +83,8 @@ def update_distance(sensor, new_distance):
     if len(distance_state["d_window"]) > window_size:
         distance_state["d_window"].pop(0)
     distance_state["d_sum"] = sum(distance_state["d_window"])
+
+    distance_state["raw_data"].append(new_distance)
 
     return distance_state["d_sum"]
     
@@ -118,10 +125,11 @@ def update_distance(sensor, new_distance):
 
 def block_found(data):
     gap_threshold = 5
-    valids_threshold = 4
+    valids_threshold = 3
     gap = 0
     valids = 0
-    for d in data:
+    recent_data = data[-15:] if len(data) >= 15 else data
+    for d in recent_data:
         if d <= side_threshold and gap <= gap_threshold:
             valids += 1
             gap = 0
@@ -132,7 +140,9 @@ def block_found(data):
             gap += 1
 
     if valids >= valids_threshold:
-        return(True)
+        return True
+    else:
+        return False
 
 
 
@@ -141,9 +151,8 @@ def scanning_mode(state, mode, phase, sensor):
         if phase == "initialise":
             sleep(2)
             return "block_finding", None, False
-        elif block_found(sensor_states[sensor]["d_window"]):
-            print("block found")
-            return "block_finding", None, False #change later
+        elif block_found(sensor_states[sensor]["raw_data"]):
+            return "block_found", None, False #change later
     if mode == "block_found":
         if state == (0,1,1,0) and phase == None:
             return "block_found", "advance", False
@@ -200,7 +209,7 @@ def follow_line(state):
             # align_ticks = 0 
             centre_streak = 0
 
-            kp = 10
+            kp = 15
             kd = 5
             correction = kp * error + kd * (error - last_error)
             motor.set_left(int(base - correction))
@@ -245,13 +254,17 @@ def collection_actions(mode, phase, state):
     elif mode == "collecting" and phase == "reversing":
         motor.set_left(-speed)
         motor.set_right(-speed)
-    elif mode == "turning":
-        motor.set_left(-speed)
-        motor.set_right(speed)
+    elif mode == "turning" and phase == "turn_start":
+        motor.set_left(-(speed+20))
+        motor.set_right((speed+20))
+    elif mode == "turning" and phase == "turning_end":
+        print("we reset the motors")
+        motor.set_left(0)
+        motor.set_right(0)
 
 
 def collection_mode(state, mode, phase, distance):
-    global front_timer, reverse_timer, block_collected, block_lifted
+    global front_timer, reverse_timer, block_collected, block_lifted, turn_start_ms
     if mode == "block_found" and phase == "approach":
         front_timer = 0
         block_collected = False
@@ -283,23 +296,26 @@ def collection_mode(state, mode, phase, distance):
                 return "collecting", "reversing", False
             
         elif phase == "reversing":
-            if reverse_timer <20:
+            if reverse_timer <130:
                 reverse_timer += 1 
                 return "collecting", "reversing", False
             else:
+                turn_start_ms = ticks_ms()
                 return "turning", "turn_start", False
-        
     elif mode == "turning" and phase == "turn_start":
-        if state == (1,0,0,1):
+        if turn_start_ms is not None:
+            print(ticks_diff(ticks_ms(), turn_start_ms))
+        if turn_start_ms is None:
+            return "turning", "turn_start", False
+        elif ticks_diff(ticks_ms(), turn_start_ms) >= turn_duration:
             return "turning", "turn_end", False
         else:
             return "turning", "turn_start", False
     elif mode == "turning" and phase == "turn_end":
-        if state == (0,1,1,0):
-            return "turning", "turn_end", True
-        else:
-            return "turning", "turn_end", False
-        
+        print("we went back to line following")
+        turn_start_ms = None
+        return "LINE_FOLLOWING", None, True
+
     return mode, phase, False
         
 
@@ -313,21 +329,24 @@ def reset_scan_state():
         "last_distance": frontsensor.read_distance(),
         "d": 0,
         "d_window": [],
-        "d_sum": 0
+        "d_sum": 0,
+        "raw_data": []
     },
     "left": {
         "distance": leftsensor.read_distance(),
         "last_distance": leftsensor.read_distance(),
         "d": 0,
         "d_window": [],
-        "d_sum": 0
+        "d_sum": 0,
+        "raw_data": []
     },
     "right": {
         "distance": rightsensor.read_distance(),
         "last_distance": rightsensor.read_distance(),
         "d": 0,
         "d_window": [],
-        "d_sum": 0
+        "d_sum": 0,
+        "raw_data": []
     }
     }
     front_timer = 0
@@ -350,7 +369,7 @@ def scanning_tick(state, sensor):
     d_sum = update_distance(sensor, new_distance)
     mode, phase, scanning_done = scanning_mode(state, mode, phase, sensor)
     scanning_actions(mode, phase, state, sensor)
-    print(f"distance: {sensor_states[sensor]['distance']}, d: {sensor_states[sensor]['d']}, mode: {mode}, phase: {phase}")
+    #print(f"distance: {sensor_states[sensor]['distance']}, d: {sensor_states[sensor]['d']}, mode: {mode}, phase: {phase}")
 
     return scanning_done
     
@@ -359,7 +378,7 @@ def collection_tick(state):
     global mode, phase, collection_done
     sensor = "front" 
     new_distance = frontsensor.read_distance()
-    print(new_distance)
+    print(f"Front distance sensor: {new_distance}")
     mode, phase, collection_done = collection_mode(state, mode, phase, new_distance)
     print(mode, phase)
     collection_actions(mode, phase, state)

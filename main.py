@@ -43,6 +43,7 @@ total_dist = None
 colour = None
 scan_started = False
 scan_done = False
+collected = False
 start = True
 
 # grabber.grab_open()
@@ -118,9 +119,13 @@ while True: # continuous loop that controls the entire functionality
                scan_started = True
        
         if scan_started:
-           if not scan_done:
+            if not scan_done:
                scan_done = loading.scanning_tick(state, sensor)
                print(f"scanning, sensor: {sensor}, scan_done: {scan_done}")
+            else:
+                collected = loading.collection_tick(state)
+        if collected:
+            print("collection done")        
         # colour = res.identify()
         # if colour == "RED":
         #     task.set_next_deposit_goal(6)

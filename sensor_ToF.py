@@ -7,6 +7,7 @@ from utime import sleep
 class DistanceSensor:
     def __init__(self, i2c_id=0, sda_pin=8, scl_pin=9, address=41):
         self.i2c_bus = I2C(i2c_id, sda=Pin(sda_pin), scl=Pin(scl_pin))
+        self.last_distance = 10000
         if address == 41:
             self.vlx_sensor = VL53L0X(self.i2c_bus, address)
             self.vlx_sensor.set_Vcsel_pulse_period(self.vlx_sensor.vcsel_period_type[0], 18)
@@ -53,11 +54,10 @@ class DistanceSensor:
         elif self.sensor_type == "TMF8x01":
             if self.tmf_sensor.is_data_ready() == True:
                 distance = self.tmf_sensor.get_distance_mm()
+                if distance == 0:
+                    distance = self.last_distance
                 self.last_distance = distance
                 return distance
-            else:
-                self.last_distance = None
-                print("no distance")
             return self.last_distance
 
     def stop(self):

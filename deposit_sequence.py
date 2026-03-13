@@ -52,7 +52,7 @@ def deposit_block_actions(mode, state):
     elif mode == "deposit":
         motor.set_left(0)
         motor.set_right(0)
-        lowered = grabber.lift_down()
+        lowered = grabber.lift_down_bottom_rack()
         opened = grabber.grab_open()
         lifted = grabber.lift_up()
         block_released = lowered and opened and lifted

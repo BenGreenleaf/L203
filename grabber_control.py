@@ -6,7 +6,7 @@ MIN_ANGLE = 10
 MAX_ANGLE = 170
 step = 2
 move_delay = 0.08
-lift_angle = 60
+lift_angle = 30
 grab_angle = 28
 
 lift = PWM(Pin(13))
@@ -42,17 +42,17 @@ def move_servo(servo, current_angle, target_angle):
 
 def lift_up():
     global lift_angle
-    lift_angle = move_servo(lift, lift_angle, 60) #140
+    lift_angle = move_servo(lift, lift_angle, 30) #140
     return True
 
 def lift_down_bottom_rack():
     global lift_angle
-    lift_angle = move_servo(lift, lift_angle, 72)
+    lift_angle = move_servo(lift, lift_angle, 42)
     return True
 
 def lift_down_top_rack():
     global lift_angle
-    lift_angle = move_servo(lift, lift_angle, 80)
+    lift_angle = move_servo(lift, lift_angle, 50)
     return True
 
 def grab_close():
@@ -69,3 +69,7 @@ if __name__ == "__main__":
     print("Testing grabber control...")
     print_servo_angles()
     sleep(1)
+
+lift_up()
+grab_open()
+

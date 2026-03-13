@@ -9,7 +9,7 @@ sequence = [
     #{"name": "go_collect_test", "type": "NAVIGATE", "goal": 34}, #for testing only
     # {"name": "go_deposit_TEST","type": "NAVIGATE", "goal": 6},
     # {"name": "deposit_TEST",   "type": "DEPOSIT"},
-    {"name": "scan_1",      "type": "SCAN"},
+    {"name": "scan_1",      "type": "SCAN", "scan_type": "lower"},
     {"name": "go_collect_test2", "type": "NAVIGATE", "goal": 14},
     {"name": "go_collect_test2", "type": "NAVIGATE", "goal": 34},
     {"name": "go_collect_test2", "type": "NAVIGATE", "goal": 1},

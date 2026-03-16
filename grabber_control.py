@@ -7,7 +7,7 @@ MAX_ANGLE = 170
 step = 2
 move_delay = 0.08
 lift_angle = 30
-grab_angle = 32
+grab_angle = 30
 
 lift = PWM(Pin(13))
 lift.freq(50)
@@ -62,7 +62,7 @@ def grab_close():
 
 def grab_open():
     global grab_angle
-    grab_angle = move_servo(grab, grab_angle, 32)
+    grab_angle = move_servo(grab, grab_angle, 30)
     return True
 
 if __name__ == "__main__":

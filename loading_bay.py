@@ -37,7 +37,7 @@ last_error = 0
 reverse_timer = 0
 turn_start_ms = None
 spin_duration = 2700
-turn_duration = 3250
+turn_duration = 3200
 turn_delay = 800
 delay_start_ms = None
 kp = 15
@@ -249,13 +249,13 @@ def follow_line(state):
         base = speed #adjust
         
 
-        if error != 0:
+        if error != 0 and align_ticks == 0:
            
             last_dir = error
             # align_ticks = 0 
             centre_streak = 0
 
-
+            print("normal line following")
             correction = kp * error + kd * (error - last_error)
             motor.set_left(int(base - correction))
             motor.set_right(int(base + correction))
@@ -264,6 +264,7 @@ def follow_line(state):
         else:
             centre_streak += 1
             if centre_streak == 1 and last_dir != 0:
+                print("centre streak mode")
                 align_ticks = 6 #adjust
             if align_ticks > 0:
                 motor.set_left(int(base - correction_speed*(-last_dir)))

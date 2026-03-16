@@ -11,6 +11,9 @@ leftsensor = DistanceSensor(1, 2, 3, 41)
 rightsensor = DistanceSensor(0, 8, 9, 41) #need to find ids for each of these sensors
 mode = "block_finding" #change back to block finding
 phase = "initialise" #change back to initialise
+grabber.grab_open()
+grabber.lift_up()
+
 
 speed = 40
 timer = 0
@@ -33,7 +36,8 @@ correction_speed = 8
 last_error = 0
 reverse_timer = 0
 turn_start_ms = None
-turn_duration = 3000
+spin_duration = 2700
+turn_duration = 1350
 
 sensor_states = {
     "front": {
@@ -147,6 +151,7 @@ def block_found(data):
 
 
 def scanning_mode(state, mode, phase, sensor):
+    global turn_start_ms
     if mode == "block_finding":
         if phase == "initialise":
             sleep(2)
@@ -154,20 +159,33 @@ def scanning_mode(state, mode, phase, sensor):
         elif block_found(sensor_states[sensor]["raw_data"]):
             return "block_found", None, False #change later
     if mode == "block_found" and sensor == "left": #bays where scanning is on the left
-        if state == (0,1,1,0) and phase == None:
-            return "block_found", "advance", False
-        if state == (1,1,1,0) and phase == "advance":
+        if phase == None: # had state = 0110
+            turn_start_ms = ticks_ms()
             return "block_found", "turning", False
-        if state == (1,1,1,1) and phase == "turning":
-            return "block_found", "approach", True
+        elif mode == "block_found" and phase == "turning":
+            if turn_start_ms is not None:
+                print(ticks_diff(ticks_ms(), turn_start_ms))
+            if turn_start_ms is None:
+                return "block_found", "turning", False
+            elif ticks_diff(ticks_ms(), turn_start_ms) >= turn_duration: #do we need two turning phases for this - maybe yes to rest motors 
+                return "block_found", "approach", False
+            else:
+                return "block_found", "turning", False  
     elif mode == "block_found" and sensor == "right": #bays where scanning is on the right
         if state == (0,1,1,0) and phase == None:
-            return "block_found", "advance", False
-        if state == (0,1,1,1) and phase == "advance":
             return "block_found", "turning", False
-        if state == (1,1,1,1) and phase == "turning":
-            return "block_found", "approach", True
-        
+        # if state == (0,1,1,1) and phase == "advance":
+        #     return "block_found", "turning", False
+    elif mode == "block_found" and phase == "turning":
+        if turn_start_ms is not None:
+            print(ticks_diff(ticks_ms(), turn_start_ms))
+        if turn_start_ms is None:
+            return "block_found", "turning", False
+        elif ticks_diff(ticks_ms(), turn_start_ms) >= turn_duration: #do we need two turning phases for this - maybe yes to rest motors 
+            turn_start_ms = None
+            return "block_found", "approach", False
+        else:
+            return "block_found", "turning", False  
     return mode, phase, False
 
 
@@ -264,7 +282,7 @@ def collection_actions(mode, phase, state):
     elif mode == "turning" and phase == "turn_start":
         motor.set_left(-(speed+20))
         motor.set_right((speed+20))
-    elif mode == "turning" and phase == "turning_end":
+    elif mode == "turning" and phase == "turn_end":
         print("we reset the motors")
         motor.set_left(0)
         motor.set_right(0)
@@ -274,6 +292,7 @@ def collection_mode(state, mode, phase, distance):
     global front_timer, reverse_timer, block_collected, block_lifted, turn_start_ms
     if mode == "block_found" and phase == "approach":
         front_timer = 0
+        turn_start_ms = None
         block_collected = False
         block_lifted = False
         return "collecting", "approach", False
@@ -315,7 +334,7 @@ def collection_mode(state, mode, phase, distance):
             print(ticks_diff(ticks_ms(), turn_start_ms))
         if turn_start_ms is None:
             return "turning", "turn_start", False
-        elif ticks_diff(ticks_ms(), turn_start_ms) >= turn_duration: #do we need two turning phases for this - maybe yes to rest motors 
+        elif ticks_diff(ticks_ms(), turn_start_ms) >= spin_duration: #do we need two turning phases for this - maybe yes to rest motors 
             return "turning", "turn_end", False
         else:
             return "turning", "turn_start", False
@@ -330,7 +349,7 @@ def collection_mode(state, mode, phase, distance):
 
 
 def reset_scan_state():
-    global sensor_states, scanning_done, front_timer, timer, wall_counter
+    global sensor_states, scanning_done, front_timer, timer, wall_counter, mode, phase, collection_done, block_collected, block_lifted, front_timer
     sensor_states = {
     "front": {
         "distance": frontsensor.read_distance(),
@@ -361,6 +380,12 @@ def reset_scan_state():
     timer = 0
     wall_counter = 0
     scanning_done = False
+    mode = "block_finding"
+    phase = "initialise"
+    collection_done = False
+    block_collected = False
+    block_lifted = False
+
 
 
 
@@ -377,7 +402,7 @@ def scanning_tick(state, sensor):
     d_sum = update_distance(sensor, new_distance)
     mode, phase, scanning_done = scanning_mode(state, mode, phase, sensor)
     scanning_actions(mode, phase, state, sensor)
-    #print(f"distance: {sensor_states[sensor]['distance']}, d: {sensor_states[sensor]['d']}, mode: {mode}, phase: {phase}")
+    print(f"distance: {sensor_states[sensor]['distance']}, d: {sensor_states[sensor]['d']}, mode: {mode}, phase: {phase}")
 
     return scanning_done
     

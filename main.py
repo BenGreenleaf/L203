@@ -23,7 +23,7 @@ import network
 import socket
 import time
 from machine import Pin, reset
-import resistance_identifier as res
+# import resistance_identifier as res
 #import loading_bay as loading
 
 reset_button = Pin(22, Pin.IN, Pin.PULL_UP)
@@ -31,6 +31,8 @@ green_led = Pin(10, Pin.OUT)
 red_led = Pin(12, Pin.OUT)
 blue_led = Pin(14, Pin.OUT)
 print("Welcome to main.py!")
+grabber.grab_open()
+grabber.lift_up()
 
 #instructions = ["straight", "left", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight","straight","straight","straight", "left", "straight", "right"]
 # instructions = ["right", "straight", "straight", "straight", "straight", "straight", "straight", "straight", "straight_drop_off", "left", "straight", "left", "straight", "straight", "straight", "straight","straight","straight","straight", "left", "straight", "right"]
@@ -96,7 +98,7 @@ while True: # continuous loop that controls the entire functionality
         turn = route.turn_decisions(instructions, state)
         control.mode, control.phase= control.update_mode(state, control.mode, control.phase, turn)
         control.update_actions(state, control.mode, control.phase)
-        print(control.mode, control.phase, turn)
+        print(state, control.mode, control.phase, turn)
 
         if not instructions and control.mode == "LINE_FOLLOWING": #check this condition
             print("goal reached")

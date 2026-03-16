@@ -57,7 +57,7 @@ def lift_down_top_rack():
 
 def grab_close():
     global grab_angle
-    grab_angle = move_servo(grab, grab_angle, 45)
+    grab_angle = move_servo(grab, grab_angle, 48)
     return True
 
 def grab_open():

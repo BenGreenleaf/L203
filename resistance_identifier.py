@@ -3,7 +3,7 @@ from machine import Pin, ADC
 from utime import sleep
 import grabber_control as grabber
 
-adc = ADC(26)      # ADC0 = GP26
+adc = ADC(27)      # ADC0 = GP26
 VREF = 3.3
 R_KNOWN = 10000.0  # 10k resistor
 
@@ -12,12 +12,12 @@ red_led = Pin(12, Pin.OUT)  # Pin 27 = GP27 (labelled 33 on the jumper)
 yellow_led = Pin(11, Pin.OUT)  # Pin 26 = GP26 (labelled 32 on the jumper)
 blue_led = Pin(14, Pin.OUT)  # Pin 22 = GP22 (labelled 31 on the jumper)
 
-tolerance = 0.05
+tolerance = 0.1
 
-v_red = 1.75
-v_blue = 0.06
-v_green = 0.37
-v_yellow = 2.05
+v_red = 1.65 #done
+v_blue = 0.045 #done
+v_green = 0.29
+v_yellow = 2.09 #done
 
 v_upper = 2.11
 
@@ -56,12 +56,19 @@ def identify():
             blue_led.value(0)
             return "YELLOW"
 
-
+avg = 0
+n = 0
+sum = 0
 grabber.grab_open()
 sleep(2)
 grabber.grab_close()
+sleep(1)
 while True:
         colour = identify()
         print(colour, v_adc)
+        sum += v_adc
+        n += 1
+        avg = sum / n
+        print("Average voltage:", avg)
         sleep(0.1)
     

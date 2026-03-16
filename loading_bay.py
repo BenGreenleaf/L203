@@ -37,7 +37,8 @@ last_error = 0
 reverse_timer = 0
 turn_start_ms = None
 spin_duration = 2700
-turn_duration = 1350
+turn_duration = 3950
+turn_delay = 800
 
 sensor_states = {
     "front": {
@@ -66,6 +67,9 @@ sensor_states = {
     }
 }
 
+green_led = Pin(10, Pin.OUT)
+
+
 x = 150 #threshold? may be better to determine state based on jumps between a further and closer distance
 xt = 20 #another threshold that needs tuning
 side_threshold = 255
@@ -87,7 +91,6 @@ def update_distance(sensor, new_distance):
     if len(distance_state["d_window"]) > window_size:
         distance_state["d_window"].pop(0)
     distance_state["d_sum"] = sum(distance_state["d_window"])
-
     distance_state["raw_data"].append(new_distance)
 
     return distance_state["d_sum"]
@@ -144,8 +147,10 @@ def block_found(data):
             gap += 1
 
     if valids >= valids_threshold:
+        green_led.value(1)
         return True
     else:
+        green_led.value(0)
         return False
 
 
@@ -162,15 +167,16 @@ def scanning_mode(state, mode, phase, sensor):
         if phase == None: # had state = 0110
             turn_start_ms = ticks_ms()
             return "block_found", "turning", False
-        elif mode == "block_found" and phase == "turning":
+        elif mode == "block_found" and phase == "turning": #had state = 1110
             if turn_start_ms is not None:
                 print(ticks_diff(ticks_ms(), turn_start_ms))
             if turn_start_ms is None:
                 return "block_found", "turning", False
             elif ticks_diff(ticks_ms(), turn_start_ms) >= turn_duration: #do we need two turning phases for this - maybe yes to rest motors 
-                return "block_found", "approach", False
+                return "block_found", "approach", True
             else:
                 return "block_found", "turning", False  
+  
     elif mode == "block_found" and sensor == "right": #bays where scanning is on the right
         if state == (0,1,1,0) and phase == None:
             return "block_found", "turning", False
@@ -183,7 +189,7 @@ def scanning_mode(state, mode, phase, sensor):
             return "block_found", "turning", False
         elif ticks_diff(ticks_ms(), turn_start_ms) >= turn_duration: #do we need two turning phases for this - maybe yes to rest motors 
             turn_start_ms = None
-            return "block_found", "approach", False
+            return "block_found", "approach", True
         else:
             return "block_found", "turning", False  
     return mode, phase, False
@@ -199,15 +205,20 @@ def scanning_actions(mode, phase, state, type): #type can be passed as sensor as
     elif mode == "block_found" and phase == "advance":
         follow_line(state)
     elif mode == "block_found" and phase == "turning":
-        if type == "left":
-            motor.set_left(-speed)
-            motor.set_right(speed)
-        elif type == "right":
+        if turn_start_ms != None and ticks_diff(ticks_ms(), turn_start_ms) >= turn_delay:
+            if type == "left":
+                motor.set_left(-speed)
+                motor.set_right(speed)
+            elif type == "right":
+                motor.set_left(speed)
+                motor.set_right(-speed)
+        else:
             motor.set_left(speed)
-            motor.set_right(-speed)
+            motor.set_right(speed)
     elif mode == "block_found" and phase == "approach":
         motor.set_left(speed)
         motor.set_right(speed)
+        follow_line(state)
     
 def follow_line(state):
         global error, last_error, last_dir, align_ticks, centre_streak

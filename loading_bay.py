@@ -171,9 +171,7 @@ def scanning_mode(state, mode, phase, sensor):
             return "block_found", "advance", False #change later
     if mode == "block_found" and sensor == "left": #bays where scanning is on the left
         if phase == "advance":
-            if delay_start_ms == None:
-                delay_start_ms = ticks_ms()
-            elif ticks_diff(ticks_ms(), delay_start_ms) >= turn_delay:
+            if state in [(1,1,1,0), (1,0,1,0), (1,1,0,0)]:
                 return "block_found", "turning", False
             else:
                 return "block_found", "advance", False

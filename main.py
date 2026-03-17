@@ -19,6 +19,7 @@ import path_finding as path
 import grabber_control as grabber
 import motor_control_functions as mc
 import loading_bay as loading
+import resistance_identifier as res
 import network
 import socket
 import time
@@ -48,6 +49,7 @@ scan_started = False
 scan_done = False
 collected = False
 start = True
+updated_node = 0
 
 # grabber.grab_open()
 # grabber.lift_down_top_rack()
@@ -113,16 +115,15 @@ while True: # continuous loop that controls the entire functionality
                 route_loaded = False
         
     elif step_type == "SCAN":
-        print('entered scan')
         if not scan_started:
            loading.reset_scan_state()
            scan_type = step["name"]
 
-           if scan_type == "scan_1" or "scan_3":
-               sensor = "left"
-               scan_started = True
-           elif scan_type == "scan_2" or "scan_4":
+           if scan_type in ["scan_1", "scan_3"]: #now other way around as we are reversing the sequence
                sensor = "right"
+               scan_started = True
+           elif scan_type in ["scan_2", "scan_4"]:
+               sensor = "left"
                scan_started = True
        
         if scan_started:
@@ -130,21 +131,43 @@ while True: # continuous loop that controls the entire functionality
                scan_done = loading.scanning_tick(state, sensor)
                print(f"scanning, sensor: {sensor}, scan_done: {scan_done}")
             else:
-                collected = loading.collection_tick(state)
+                collected = loading.collection_tick(state, sensor)
         if collected:
+            if current_node is not None and loading.node_addition is not None:
+                print(loading.node_addition)
+                current_node = current_node + (4 - loading.node_addition) # this subtracts to get the node that its leaving with the block
+                print("CURRENT NODE")
+                print(current_node)
+                if sensor == "right":
+                    current_orientation = "south"
+                elif sensor == "left":
+                    current_orientation = "south" #might not need these
+            else:
+                print("current_node or node_addition is None")
             print("collection done")        
-        # colour = res.identify()
-        # if colour == "RED":
-        #     task.set_next_deposit_goal(6)
-        # elif colour == "BLUE": #set node and positioning as east if in lower right, west if in lower left (loading bay will leave the robot facing outward)
-        #     task.set_next_deposit_goal(44)
-        # elif colour == "GREEN":
-        #     task.set_next_deposit_goal(43)
-        # elif colour == "YELLOW":
-        #     task.set_next_deposit_goal(4)
-        # task.advance_stage()
-        # route_loaded = False
-        # scan_started = False
+            colour = res.identify()
+            
+            if colour == "RED":
+                print("red identified")
+                task.set_next_deposit_goal(6)
+            elif colour == "BLUE": #set node and positioning as east if in lower right, west if in lower left (loading bay will leave the robot facing outward)
+                print("blue identified")
+                task.set_next_deposit_goal(44)
+            elif colour == "GREEN":
+                print("green identified")
+                task.set_next_deposit_goal(43)
+            elif colour == "YELLOW":
+                print("yellow identified")
+                task.set_next_deposit_goal(4)
+            elif colour == None:
+                print("none")
+            else:
+                print("error")
+            task.advance_stage()
+            route_loaded = False
+            scan_started = False
+            scan_done = False
+            collected = False
 
 
     elif step_type == "DEPOSIT":

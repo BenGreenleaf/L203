@@ -70,6 +70,8 @@ def identify():
         return "YELLOW"
     elif max(vals) == vals[3]:
         return "GREEN"
+    else:
+        return "RED"
              
 
 

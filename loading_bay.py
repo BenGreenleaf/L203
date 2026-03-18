@@ -5,6 +5,7 @@ from utime import sleep, ticks_ms, ticks_diff
 import motor_control_functions as motor
 import grabber_control as grabber
 import task_control as task
+import resistance_identifier as res
 
 frontsensor = DistanceSensor(0, 8, 9, 65)
 leftsensor = DistanceSensor(1, 2, 3, 41)
@@ -37,7 +38,7 @@ last_error = 0
 reverse_timer = 0
 turn_start_ms = None
 spin_duration = 1600
-turn_duration = 1200
+turn_duration = 1100
 turn_delay = 0
 delay_start_ms = None
 kp = 15
@@ -46,6 +47,7 @@ last_outer = 0
 node_addition = 0
 initialise_start_ms = None
 initial_spin_duration = 2590 #  needs tuning
+colour = None
 
 sensor_states = {
     "front": {
@@ -198,14 +200,17 @@ def scanning_mode(state, mode, phase, sensor):
             if sensor == "right":
                 if last_outer == 0 and outerright == 1:
                     wall_counter += 1
+                    print("wall, right")
                 last_outer = outerright
             elif sensor == "left":
                 if last_outer == 0 and outerleft == 1:
                     wall_counter += 1
+                    print("wall, left")
                 last_outer = outerleft
             return "block_finding", None, False
         elif block_found(sensor_states[sensor]["raw_data"]):
             wall_counter += 1
+            print("wall, block")
             return "block_found", "advance", False #change later
     if mode == "block_found" and sensor == "left": #bays where scanning is on the left
         if phase == "advance":
@@ -235,7 +240,7 @@ def scanning_mode(state, mode, phase, sensor):
         elif mode == "block_found" and phase == "seek_line":
                 turn_start_ms = None
                 if inner == (1,1):
-                    node_addition = wall_counter
+                    node_addition = wall_counter - 1
                     return "block_found", "approach", True
                 elif inner == (1,0):
                     return "block_found", "correct_left", False
@@ -245,7 +250,7 @@ def scanning_mode(state, mode, phase, sensor):
                     return "block_found", "seek_line", False
         elif mode == "block_found" and phase == "correct_left":
             if inner == (1,1):
-                node_addition = wall_counter
+                node_addition = wall_counter - 1
                 return "block_found", "approach", True
             elif inner == (1,0):
                 return "block_found", "correct_left", False
@@ -255,7 +260,7 @@ def scanning_mode(state, mode, phase, sensor):
                 return "block_found", "seek_line", False
         elif mode == "block_found" and phase == "correct_right":
             if inner == (1,1):
-                node_addition = wall_counter
+                node_addition = wall_counter -1
                 return "block_found", "approach", True
             elif inner == (0,1):
                 return "block_found", "correct_right", False
@@ -294,7 +299,7 @@ def scanning_mode(state, mode, phase, sensor):
         elif mode == "block_found" and phase == "seek_line":
                 turn_start_ms = None
                 if inner == (1,1):
-                    node_addition = wall_counter
+                    node_addition = wall_counter -1
                     return "block_found", "approach", True
                 elif inner == (1,0):
                     return "block_found", "correct_left", False
@@ -304,7 +309,7 @@ def scanning_mode(state, mode, phase, sensor):
                     return "block_found", "seek_line", False  
         elif mode == "block_found" and phase == "correct_left":
             if inner == (1,1):
-                node_addition = wall_counter
+                node_addition = wall_counter -1
                 return "block_found", "approach", True
             elif inner == (1,0):
                 return "block_found", "correct_left", False
@@ -315,7 +320,7 @@ def scanning_mode(state, mode, phase, sensor):
 
         elif mode == "block_found" and phase == "correct_right":
             if inner == (1,1):
-                node_addition = wall_counter
+                node_addition = wall_counter- 1
                 return "block_found", "approach", True
             elif inner == (0,1):
                 return "block_found", "correct_right", False
@@ -461,18 +466,21 @@ def collection_actions(mode, phase, state, sensor):
             if phase == "reverse":
                 motor.set_left(int(-0.7*speed))
                 motor.set_right(int(-0.7*speed))
-            if phase == "turning_start":
+            elif phase == "turning_start":
                 motor.set_left(-1.2*turn_speed)
                 motor.set_right(turn_speed)
-            if phase == "turning_end": #phases look identical but need to separate them as states are contained within each that need to be interpreted differenty
+            elif phase == "turning_end": #phases look identical but need to separate them as states are contained within each that need to be interpreted differenty
                 motor.set_left(-1.05*turn_speed)
                 motor.set_right(turn_speed)
-            if phase == "exiting":
+            elif phase == "sensing":
+                motor.set_left(0)
+                motor.set_right(0)
+            elif phase == "exiting":
                 motor.set_left(speed)
                 motor.set_right(speed)
 
 def collection_mode(state, mode, phase, distance, sensor):
-    global front_timer, reverse_timer, block_collected, block_lifted, turn_start_ms
+    global front_timer, reverse_timer, block_collected, block_lifted, turn_start_ms, colour
     
     if mode == "block_found" and phase == "approach":
         front_timer = 0
@@ -551,7 +559,7 @@ def collection_mode(state, mode, phase, distance, sensor):
             elif phase == "turning_end":
                 if state in [(0,1,1,1),(0,1,0,1)]:
                     sleep(0.35)
-                    return "finishing_turn", "exiting", False
+                    return "finishing_turn", "sensing", False
                 else:
                     return "finishing_turn", "turning_end", False
             elif phase == "exiting":
@@ -559,6 +567,25 @@ def collection_mode(state, mode, phase, distance, sensor):
                     return "LINE_FOLLOWING", None, True #does it need to be none
                 else:
                     return "finishing_turn", "exiting", False
+            elif phase == "sensing":
+                colour = res.identify()
+                if colour == "RED":
+                    print("red identified")
+                    task.set_next_deposit_goal(6)
+                elif colour == "BLUE": #set node and positioning as east if in lower right, west if in lower left (loading bay will leave the robot facing outward)
+                    print("blue identified")
+                    task.set_next_deposit_goal(44)
+                elif colour == "GREEN":
+                    print("green identified")
+                    task.set_next_deposit_goal(43)
+                elif colour == "YELLOW":
+                    print("yellow identified")
+                    task.set_next_deposit_goal(4)
+                elif colour == None:
+                    print("none")
+                else:
+                    print("error")
+                return "finishing_turn", "exiting", False
         elif sensor == "left":
             if phase == "reverse": 
                 if state in  [(1,1,1,0), (1,1,0,0), (1,1,1,1)]:
@@ -573,9 +600,30 @@ def collection_mode(state, mode, phase, distance, sensor):
             elif phase == "turning_end":
                 if state == (1,1,1,0):
                     sleep(0.65)
-                    return "finishing_turn", "exiting", False
+                    colour = None
+                    return "finishing_turn", "sensing", False
                 else:
                     return "finishing_turn", "turning_end", False
+
+            elif phase == "sensing":
+                colour = res.identify()
+                if colour == "RED":
+                    print("red identified")
+                    task.set_next_deposit_goal(6)
+                elif colour == "BLUE": #set node and positioning as east if in lower right, west if in lower left (loading bay will leave the robot facing outward)
+                    print("blue identified")
+                    task.set_next_deposit_goal(44)
+                elif colour == "GREEN":
+                    print("green identified")
+                    task.set_next_deposit_goal(43)
+                elif colour == "YELLOW":
+                    print("yellow identified")
+                    task.set_next_deposit_goal(4)
+                elif colour == None:
+                    print("none")
+                else:
+                    print("error")
+                return "finishing_turn", "exiting", False
             elif phase == "exiting":
                 if state in [(0,1,1,0), (0,0,1,0)]:
                     return "LINE_FOLLOWING", None, True
@@ -591,7 +639,7 @@ def collection_mode(state, mode, phase, distance, sensor):
 
 
 def reset_scan_state():
-    global sensor_states, scanning_done, front_timer, timer, wall_counter, mode, phase, collection_done, block_collected, block_lifted, front_timer, correction_speed, kp, node_addition, wall_counter, delay_start_ms, initialise_start_ms, turn_start_ms, last_outer, kd, error, last_error, centre_streak, align_ticks, last_dir, reverse_timer
+    global sensor_states, scanning_done, front_timer, timer, wall_counter, mode, phase, collection_done, block_collected, block_lifted, front_timer, correction_speed, kp, node_addition, wall_counter, delay_start_ms, initialise_start_ms, turn_start_ms, last_outer, kd, error, last_error, centre_streak, align_ticks, last_dir, reverse_timer, colour
     sensor_states = {
     "front": {
         "distance": frontsensor.read_distance(),
@@ -642,6 +690,7 @@ def reset_scan_state():
     align_ticks = 0
     last_dir = 0
     reverse_timer = 0
+    colour = None
 
 
 

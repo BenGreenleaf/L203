@@ -73,7 +73,7 @@ def identify():
              
 
 
-grabber.grab_open()
-sleep(1)
-grabber.grab_close()
-print(identify())
+# grabber.grab_open()
+# sleep(1)
+# grabber.grab_close()
+# print(identify())

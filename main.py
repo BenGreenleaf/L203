@@ -135,7 +135,7 @@ while True: # continuous loop that controls the entire functionality
         if collected:
             if current_node is not None and loading.node_addition is not None:
                 print(loading.node_addition)
-                current_node = current_node + (4 - loading.node_addition) # this subtracts to get the node that its leaving with the block
+                current_node = current_node + (1-(4 - loading.node_addition)) # this subtracts to get the node that its leaving with the block
                 print("CURRENT NODE")
                 print(current_node)
                 if sensor == "right":

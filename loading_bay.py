@@ -45,7 +45,7 @@ kd = 5
 last_outer = 0
 node_addition = 0
 initialise_start_ms = None
-initial_spin_duration = 1740 #  needs tuning
+initial_spin_duration = 2590 #  needs tuning
 
 sensor_states = {
     "front": {
@@ -655,11 +655,11 @@ def scanning_tick(state, sensor):
         new_distance = leftsensor.read_distance()
     elif sensor == "right":
         new_distance = rightsensor.read_distance()
-    
+    print(sensor)
     d_sum = update_distance(sensor, new_distance)
     mode, phase, scanning_done = scanning_mode(state, mode, phase, sensor)
     scanning_actions(mode, phase, state, sensor)
-    print(f"distance: {sensor_states[sensor]['distance']}, d: {sensor_states[sensor]['d']}, mode: {mode}, phase: {phase}")
+    print(f"distance: {sensor_states[sensor]['distance']}, new_distance: {new_distance} d: {sensor_states[sensor]['d']}, mode: {mode}, phase: {phase}")
 
     return scanning_done
     

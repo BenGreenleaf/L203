@@ -66,7 +66,7 @@ def update_mode(state, mode, phase, turn): # mode is the higher level state of t
             reverse_ticks = 8
             return "LEFT_TURN", "reversing"
         elif state[0] == 1 and state[3] == 0 and turn == "left":
-            reverse_ticks = 8
+            reverse_ticks = 5
             return "LEFT_TURN", "turning_start"
         elif state[0] == 0 and state[3] == 1 and turn == "right":
             reverse_ticks = 8

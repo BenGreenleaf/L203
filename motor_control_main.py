@@ -60,16 +60,16 @@ def update_mode(state, mode, phase, turn): # mode is the higher level state of t
             drop_off_ready = False
             return "180_TURN", "reversing"
         elif state[0] == 1 and state[3] == 1 and turn == "right":
-            reverse_ticks = 8
+            reverse_ticks = 5
             return "RIGHT_TURN", "reversing"
         elif state[0] == 1 and state[3] == 1 and turn == "left":
-            reverse_ticks = 8
+            reverse_ticks = 5
             return "LEFT_TURN", "reversing"
         elif state[0] == 1 and state[3] == 0 and turn == "left":
             reverse_ticks = 5
             return "LEFT_TURN", "turning_start"
         elif state[0] == 0 and state[3] == 1 and turn == "right":
-            reverse_ticks = 8
+            reverse_ticks = 5
             return "RIGHT_TURN", "turning_start"
         # elif state == (1,0,0,1):
         #     return "STOP", "turning"

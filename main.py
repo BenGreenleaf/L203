@@ -79,24 +79,12 @@ while True: # continuous loop that controls the entire functionality
             if start == True and instructions:
                 instructions = instructions[1:] # skip the first instruction as the robot is already facing the correct direction for the first move
                 start = False
-            elif task.get_previous_step()['type'] == "DEPOSIT" and instructions:
+            elif (task.get_previous_step()['type'] == "DEPOSIT" and instructions) or (task.get_previous_step()['type'] == "SCAN" and instructions):
                 instructions = instructions[1:]
                 
             print(f"{instructions}--------------------------------------------------------------------------------------------------------------")
             route_loaded = True
-        
-        if instructions and instructions[0] == "straight":
-            green_led.value(1)
-            red_led.value(0)
-            blue_led.value(0)
-        elif instructions and instructions[0] == "left":
-            green_led.value(0)
-            red_led.value(1)
-            blue_led.value(0)
-        elif instructions and instructions[0] == "right":
-            green_led.value(0)
-            red_led.value(0)
-            blue_led.value(1)
+    
 
         turn = route.turn_decisions(instructions, state)
         control.mode, control.phase= control.update_mode(state, control.mode, control.phase, turn)
@@ -145,9 +133,25 @@ while True: # continuous loop that controls the entire functionality
                     current_orientation = "south" #might not need these
             else:
                 print("current_node or node_addition is None")
-            print("collection done")        
-            colour = loading.colour 
-
+            print("collection done")       
+            colour = res.identify()
+            
+            if colour == "RED":
+                print("red identified")
+                task.set_next_deposit_goal(6)
+            elif colour == "BLUE": #set node and positioning as east if in lower right, west if in lower left (loading bay will leave the robot facing outward)
+                print("blue identified")
+                task.set_next_deposit_goal(44)
+            elif colour == "GREEN":
+                print("green identified")
+                task.set_next_deposit_goal(43)
+            elif colour == "YELLOW":
+                print("yellow identified")
+                task.set_next_deposit_goal(4)
+            elif colour == None:
+                print("none")
+            else:
+                print("error")
             print("exiting scanning now")
             task.advance_stage()
             route_loaded = False

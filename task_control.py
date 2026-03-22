@@ -6,15 +6,23 @@ action = "go_deposit_TEST"
 
 sequence = [
     {"name": "go_collect_1", "type": "NAVIGATE", "goal": 8}, #potentially slightly excessive but i want the names of the states for debugging if necessary
-    # {"name": "go_collect_test", "type": "NAVIGATE", "goal": 34}, #for testing only
-    # {"name": "go_deposit_TEST","type": "NAVIGATE", "goal": 6},
-    # {"name": "deposit_TEST",   "type": "DEPOSIT"},
     {"name": "scan_1",      "type": "SCAN", "scan_type": "lower"},
-    # {"name": "go_collect_test2", "type": "NAVIGATE", "goal": 14},
-    # {"name": "go_collect_test2", "type": "NAVIGATE", "goal": 34},
-    # {"name": "go_collect_test2", "type": "NAVIGATE", "goal": 1},
-    # {"name": "stop",      "type": "STOP", "scan_type": "lower"},
-    # {"name": "scan_1",      "type": "SCAN"},
+    {"name": "go_deposit_1","type": "NAVIGATE", "goal": None},
+    {"name": "deposit_1",   "type": "DEPOSIT"},
+    {"name": "go_collect_2","type": "NAVIGATE", "goal": 38},
+    {"name": "scan_2",      "type": "SCAN", "scan_type": "lower"},
+    {"name": "go_deposit_2","type": "NAVIGATE", "goal": None},
+    {"name": "deposit_2",   "type": "DEPOSIT"},
+    {"name": "go_collect_3","type": "NAVIGATE", "goal": 18},
+    {"name": "scan_3",      "type": "SCAN", "scan_type": "upper"},
+    {"name": "go_deposit_3","type": "NAVIGATE", "goal": None},
+    {"name": "deposit_3",   "type": "DEPOSIT"},
+    {"name": "go_collect_4","type": "NAVIGATE", "goal": 26},
+    {"name": "scan_4",      "type": "SCAN", "scan_type": "upper"},
+    {"name": "go_deposit_4","type": "NAVIGATE", "goal": None},
+    {"name": "deposit_4",   "type": "DEPOSIT"},
+    {"name": "go_collect_1", "type": "NAVIGATE", "goal": 8}, #potentially slightly excessive but i want the names of the states for debugging if necessary
+    {"name": "scan_1",      "type": "SCAN", "scan_type": "lower"},
     {"name": "go_deposit_1","type": "NAVIGATE", "goal": None},
     {"name": "deposit_1",   "type": "DEPOSIT"},
     {"name": "go_collect_2","type": "NAVIGATE", "goal": 39},

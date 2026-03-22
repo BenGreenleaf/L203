@@ -16,7 +16,7 @@ tolerance = 0.1
 
 length = 10
 
-v_red = 2.35 #done
+v_red = 1.56 #done
 v_blue = 0.04 #done
 v_green = 0.2
 v_yellow = 2.08 #new
@@ -60,22 +60,36 @@ def identify():
                 blue_led.value(0)
                 vals = [vals[0], vals[1], vals[2]+1, vals[3]]
 
-        sleep(0.1)
+        sleep(0.03)
     print(vals)
     if max(vals) == vals[0]:
+        red_led.value(1)
+        green_led.value(0)
+        yellow_led.value(0)
+        blue_led.value(0)
         return "RED"
     elif max(vals) == vals[1]:
+        red_led.value(0)
+        green_led.value(0)
+        yellow_led.value(0)
+        blue_led.value(1)
         return "BLUE"
     elif max(vals) == vals[2]:
+        red_led.value(0)
+        green_led.value(0)
+        yellow_led.value(1)
+        blue_led.value(0)
         return "YELLOW"
     elif max(vals) == vals[3]:
+        red_led.value(0)
+        green_led.value(1)
+        yellow_led.value(0)
+        blue_led.value(0)
         return "GREEN"
     else:
+        red_led.value(1)
+        green_led.value(0)
+        yellow_led.value(0)
+        blue_led.value(0)
         return "RED"
              
-
-
-# grabber.grab_open()
-# sleep(1)
-# grabber.grab_close()
-# print(identify())

@@ -40,21 +40,9 @@ def turn_decisions(instructions, state):
             if instructions[0] == "right":
                 turn = "right"
                 instructions.pop(0)
-                if yellow_pin_val == 0:
-                    yellow_led.value(1)
-                    yellow_pin_val = 1
-                else:
-                    yellow_led.value(0)
-                    yellow_pin_val = 0
             elif instructions[0] == "left":
                 turn = "left"
                 instructions.pop(0)
-                if yellow_pin_val == 0:
-                    yellow_led.value(1)
-                    yellow_pin_val = 1
-                else:
-                    yellow_led.value(0)
-                    yellow_pin_val = 0
             over_line = True
     elif state[0] == 1 and state[3] == 0 and control.mode == "LINE_FOLLOWING": # if the robot is at a junction and in line following mode, follow the instructions
         #optional left turn
@@ -64,21 +52,11 @@ def turn_decisions(instructions, state):
             if instructions[0] == "left":
                 turn = "left"
                 instructions.pop(0)
-                if yellow_pin_val == 0:
-                    yellow_led.value(1)
-                    yellow_pin_val = 1
-                else:
-                    yellow_led.value(0)
-                    yellow_pin_val = 0
+              
                 control.optional_left_turn=True
             elif instructions[0] == "straight":
                 instructions.pop(0)
-                if yellow_pin_val == 0:
-                    yellow_led.value(1)
-                    yellow_pin_val = 1
-                else:
-                    yellow_led.value(0)
-                    yellow_pin_val = 0
+        
             over_line=True
     elif state[0] == 0 and state[3] == 1 and control.mode == "LINE_FOLLOWING": # if the robot is at a junction and in line following mode, follow the instructions
         #optional right turn
@@ -88,21 +66,11 @@ def turn_decisions(instructions, state):
             if instructions[0] == "right":
                 turn = "right"
                 instructions.pop(0)
-                if yellow_pin_val == 0:
-                    yellow_led.value(1)
-                    yellow_pin_val = 1
-                else:
-                    yellow_led.value(0)
-                    yellow_pin_val = 0
+               
                 control.optional_right_turn=True
             elif instructions[0] == "straight":
                 instructions.pop(0)
-                if yellow_pin_val == 0:
-                    yellow_led.value(1)
-                    yellow_pin_val = 1
-                else:
-                    yellow_led.value(0)
-                    yellow_pin_val = 0
+              
             over_line=True
     elif state[0] == 1 and state[1] == 1 and state[2] == 1 and state[3] == 1 and control.mode == "LINE_FOLLOWING" and instructions[0] == "straight_drop_off": # if the robot is at a junction and in line following mode, follow the instructions (why 1111?)
         turn = "None"
